@@ -24,7 +24,7 @@ func main() {
 	ans := 1
 
 	for {
-		fmt.Printf("%d pings were emmited by now !", ans)
+		fmt.Printf("%d pings were emmited by now !\n", ans)
 
 		ans++
 
