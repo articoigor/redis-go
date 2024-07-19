@@ -14,8 +14,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	for {
-		conn, err := l.Accept()
+	conn, _ := l.Accept()
+
+	for conn != nil {
+		conn, _ = l.Accept()
 
 		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
