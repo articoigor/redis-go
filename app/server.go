@@ -14,10 +14,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	conn, _ := l.Accept()
+	for {
+		conn, _ := l.Accept()
 
-	for conn != nil {
-		conn, _ = l.Accept()
+		bytes := make([]byte, 128)
+
+		conn.Read(bytes)
+
+		fmt.Println(string(bytes))
 
 		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
