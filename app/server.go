@@ -24,7 +24,9 @@ func main() {
 	ans := 1
 
 	for {
-		fmt.Printf("%d pings were emmited by now !", ans++)
+		fmt.Printf("%d pings were emmited by now !", ans)
+
+		ans++
 
 		buf := make([]byte, 1024)
 
