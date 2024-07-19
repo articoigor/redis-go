@@ -21,7 +21,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	ans := 1
+
 	for {
+		fmt.Printf("%d pings were emmited by now !", ans++)
+
 		buf := make([]byte, 1024)
 
 		conn.Read(buf)
