@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -18,31 +16,12 @@ func main() {
 	fmt.Println("Listening on 0.0.0.0:6379")
 
 	for {
-		conn, err := l.Accept()
-		if err != nil {
-			fmt.Println("Failed to accept connection")
-			continue
-		}
+		conn, _ := l.Accept()
 
 		go handleConnection(conn)
 	}
 }
 
 func handleConnection(conn net.Conn) {
-	defer conn.Close()
-
-	reader := bufio.NewReader(conn)
-
-	for {
-		req, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println("Failed to read from connection:", err)
-			return
-		}
-
-		req = strings.TrimSpace(req)
-		fmt.Println("Received:", req)
-
-		conn.Write([]byte("+PONG\r\n"))
-	}
+	conn.Write([]byte("+PONG\r\n"))
 }
