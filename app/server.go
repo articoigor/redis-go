@@ -14,14 +14,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	for {
-		conn, err := l.Accept()
+	conn, err := l.Accept()
 
-		if err != nil {
-			fmt.Println("Error accepting: ", err.Error())
-			continue
-		}
+	bytes := make([]byte, 256)
 
-		conn.Write([]byte("+PONG\r\n"))
-	}
+	conn.Write(bytes)
+
+	fmt.Println("*****")
+
+	fmt.Println(string(bytes))
+
+	fmt.Println("*****")
+
+	conn.Write([]byte("+PONG\r\n"))
 }
