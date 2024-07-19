@@ -18,15 +18,11 @@ func main() {
 
 	bytes := make([]byte, 256)
 
-	_, err = conn.Read(bytes)
+	_, _ = conn.Read(bytes)
 
 	req := string(bytes)
 
-	fmt.Println("*****")
-
 	fmt.Println(req)
-
-	fmt.Println("*****")
 
 	conn.Write([]byte("+PONG\r\n"))
 }
