@@ -14,15 +14,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	conn, err := l.Accept()
+	conn, _ := l.Accept()
 
 	bytes := make([]byte, 256)
 
-	conn.Write(bytes)
+	_, err = conn.Read(bytes)
+
+	req := string(bytes)
 
 	fmt.Println("*****")
 
-	fmt.Println(bytes)
+	fmt.Println(req)
 
 	fmt.Println("*****")
 
