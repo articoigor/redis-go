@@ -43,18 +43,6 @@ func handleConnection(conn net.Conn) {
 		req = strings.TrimSpace(req)
 		fmt.Println("Received:", req)
 
-		if req == "PING" {
-			_, err := conn.Write([]byte("+PONG\r\n"))
-			if err != nil {
-				fmt.Println("Failed to write to connection:", err)
-				return
-			}
-		} else {
-			_, err := conn.Write([]byte("-ERR unknown command\r\n"))
-			if err != nil {
-				fmt.Println("Failed to write to connection:", err)
-				return
-			}
-		}
+		conn.Write([]byte("+PONG\r\n"))
 	}
 }
