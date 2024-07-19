@@ -22,7 +22,7 @@ func main() {
 
 	fmt.Println("*****")
 
-	fmt.Println(string(bytes))
+	fmt.Println(bytes)
 
 	fmt.Println("*****")
 
