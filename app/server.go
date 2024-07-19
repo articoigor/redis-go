@@ -14,19 +14,34 @@ func main() {
 		os.Exit(1)
 	}
 
-	conn, err := l.Accept()
+	go handleConnections(l)
+}
 
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+func handleConnections(listener net.Listener) {
+	connCount := 0
+	for {
+		connCount++
+
+		conn, err := listener.Accept()
+
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		} else {
+			fmt.Println("Connection %d establised !", connCount)
+		}
+
+		go handlePings(conn)
 	}
+}
 
-	ans := 1
+func handlePings(conn net.Conn) {
+	pingCount := 0
 
 	for {
-		fmt.Printf("%d pings were emmited by now !\n", ans)
+		pingCount++
 
-		ans++
+		fmt.Printf("%d pings were emmited by now !\n", pingCount)
 
 		buf := make([]byte, 1024)
 
