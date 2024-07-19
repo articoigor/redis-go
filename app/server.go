@@ -28,7 +28,7 @@ func handleConnections(listener net.Listener) {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		} else {
-			fmt.Println("Connection %d establised !", connCount)
+			fmt.Printf("Connection %d establised !", connCount)
 		}
 
 		go handlePings(conn)
