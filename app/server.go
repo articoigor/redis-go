@@ -57,6 +57,5 @@ func (s *Server) readLoop(conn net.Conn) {
 			fmt.Println("Error while reading the message")
 		}
 		conn.Write([]byte("+PONG\r\n"))
-		break
 	}
 }
