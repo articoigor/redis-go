@@ -15,17 +15,11 @@ func main() {
 	}
 
 	for {
-		conn, _ := l.Accept()
-
-		bytes := make([]byte, 128)
-
-		conn.Read(bytes)
-
-		fmt.Println(string(bytes))
+		conn, err := l.Accept()
 
 		if err != nil {
-			fmt.Println("Error accepting connection: ", err.Error())
-			os.Exit(1)
+			fmt.Println("Error accepting: ", err.Error())
+			continue
 		}
 
 		conn.Write([]byte("+PONG\r\n"))
