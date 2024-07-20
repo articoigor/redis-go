@@ -49,16 +49,16 @@ func handlePings(conn net.Conn, connID int) {
 
 		fmt.Printf("Connection %d: %d pings received\n", connID, pingCount)
 
-		buf := make([]byte, 1024)
+		// buf := make([]byte, 1024)
 
-		_, err := conn.Read(buf)
+		// _, err := conn.Read(buf)
 
-		if err != nil {
-			fmt.Println("Error reading from connection:", err.Error())
-			break
-		}
+		// if err != nil {
+		// 	fmt.Println("Error reading from connection:", err.Error())
+		// 	break
+		// }
 
-		_, err = conn.Write([]byte("+PONG\r\n"))
+		_, err := conn.Write([]byte("+PONG\r\n"))
 		if err != nil {
 			fmt.Println("Error writing to connection:", err.Error())
 			break
