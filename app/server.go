@@ -34,11 +34,11 @@ func handleConnections(listener net.Listener) {
 			fmt.Printf("Connection %d establised !", connCount)
 		}
 
-		go handlePings(conn)
+		go handlePings(conn, connCount)
 	}
 }
 
-func handlePings(conn net.Conn) {
+func handlePings(conn net.Conn, connID int) {
 	defer conn.Close()
 
 	pingCount := 0
@@ -46,12 +46,13 @@ func handlePings(conn net.Conn) {
 	for {
 		pingCount++
 
-		fmt.Printf("%d pings were emmited by now !\n", pingCount)
+		fmt.Printf("Connection %d: %d pings received\n", connID, pingCount)
 
-		buf := make([]byte, 1024)
+		_, err := conn.Write([]byte("+PONG\r\n"))
 
-		conn.Read(buf)
-
-		conn.Write([]byte("+PONG\r\n"))
+		if err != nil {
+			fmt.Println("Error writing to connection:", err.Error())
+			break
+		}
 	}
 }
