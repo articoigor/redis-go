@@ -16,7 +16,7 @@ func main() {
 
 	defer l.Close()
 
-	go handleConnections(l)
+	handleConnections(l)
 }
 
 func handleConnections(listener net.Listener) {
@@ -26,7 +26,7 @@ func handleConnections(listener net.Listener) {
 		conn, err := listener.Accept()
 
 		if err != nil {
-			fmt.Println("Error accepting connection: ", err.Error())
+			fmt.Println("Error accepting connection:", err.Error())
 
 			continue
 		}
