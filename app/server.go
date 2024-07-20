@@ -23,16 +23,17 @@ func handleConnections(listener net.Listener) {
 	connCount := 0
 
 	for {
-		connCount++
-
 		conn, err := listener.Accept()
 
 		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
-			os.Exit(1)
-		} else {
-			fmt.Printf("Connection %d establised !", connCount)
+
+			continue
 		}
+
+		connCount++
+
+		fmt.Printf("Connection %d establised !", connCount)
 
 		go handlePings(conn, connCount)
 	}
