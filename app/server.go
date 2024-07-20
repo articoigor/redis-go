@@ -46,6 +46,8 @@ func handlePings(conn net.Conn, connID int) {
 	for {
 		pingCount++
 
+		fmt.Printf("Connection %d: %d pings received\n", connID, pingCount)
+
 		_, err := conn.Write([]byte("+PONG\r\n"))
 
 		if err != nil {
