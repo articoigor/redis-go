@@ -94,7 +94,7 @@ func processRequest(data []string, hashMap map[string]string) string {
 func processGetRequest(data []string, hashMap map[string]string) string {
 	value := hashMap[data[4]]
 
-	return fmt.Sprintf("%s\r\n%d\r\n", value, len(value))
+	return value
 }
 
 func processSetRequest(data []string, hashMap map[string]string) string {
