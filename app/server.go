@@ -142,5 +142,5 @@ func processSetRequest(data []string, hashMap map[string]HashMap) string {
 
 	hashMap[key] = hashValue
 
-	return "OK"
+	return "+OK"
 }
