@@ -74,6 +74,8 @@ func handleCommand(conn net.Conn, connID int) {
 
 		returnMessage := processRequest(data, hashMap)
 
+		fmt.Println(returnMessage)
+
 		_, err = conn.Write([]byte(fmt.Sprintf("+%s\r\n", returnMessage)))
 
 		if err != nil {
