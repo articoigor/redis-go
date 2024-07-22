@@ -123,7 +123,7 @@ func processSetRequest(data []string, hashMap map[string]HashMap) string {
 		expiryVal, _ = strconv.Atoi(data[10])
 	}
 
-	hashValue := HashMap{value: data[4], createdAt: now.UnixMilli(), expiry: int64(expiryVal)}
+	hashValue := HashMap{value: data[6], createdAt: now.UnixMilli(), expiry: int64(expiryVal)}
 
 	key := data[4]
 
