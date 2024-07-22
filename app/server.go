@@ -105,6 +105,8 @@ func processGetRequest(data []string, hashMap map[string]HashMap) string {
 
 	mapObj := hashMap[key]
 
+	fmt.Println(mapObj.expiry)
+
 	if mapObj.expiry > 0 && mapObj.createdAt-now.UnixMilli() <= mapObj.expiry {
 		return mapObj.value
 	} else {
