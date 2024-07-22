@@ -89,7 +89,7 @@ func processRequest(data []string, req string, hashMap map[string]HashMap) strin
 
 	switch endpoint {
 	case "ECHO":
-		return data[4]
+		return "+" + data[4]
 	case "PING":
 		return "+" + "PONG"
 	case "GET":
