@@ -106,6 +106,8 @@ func processGetRequest(data []string, hashMap map[string]HashMap) string {
 
 	timeSpan := retrieveTimePassed(mapObj)
 
+	fmt.Println(timeSpan)
+
 	if mapObj.expiry > 0 && timeSpan <= mapObj.expiry {
 		return mapObj.value
 	} else {
