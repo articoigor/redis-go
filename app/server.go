@@ -60,17 +60,28 @@ func handlePings(conn net.Conn, connID int) {
 		}
 
 		fmt.Println(string(buf))
+
 		data := strings.Split(string(buf), "\r\n")
 
-		size := len(data)
+		returnMessage := processRequest(data)
 
-		if size > 2 && data[2] == "ECHO" {
-			_, err = conn.Write([]byte(fmt.Sprintf("+%s\r\n", data[4])))
+		_, err = conn.Write([]byte(fmt.Sprintf("+%s\r\n", returnMessage)))
 
-			if err != nil {
-				fmt.Println("Error writing to connection:", err.Error())
-				break
-			}
+		if err != nil {
+			fmt.Println("Error writing to connection:", err.Error())
 		}
+	}
+}
+
+func processRequest(data []string) string {
+	endpoint := data[2]
+
+	switch endpoint {
+	case "ECHO":
+		return data[4]
+	case "PING":
+		return "PONG"
+	default:
+		return ""
 	}
 }
