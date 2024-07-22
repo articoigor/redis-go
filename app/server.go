@@ -77,7 +77,7 @@ func handleCommand(conn net.Conn, connID int) {
 
 func processRequest(data []string, hashMap map[string]string) string {
 	endpoint := data[2]
-
+	fmt.Println(endpoint)
 	switch endpoint {
 	case "ECHO":
 		return data[4]
