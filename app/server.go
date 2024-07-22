@@ -26,6 +26,8 @@ func handleConnections(listener net.Listener) {
 	for {
 		conn, err := listener.Accept()
 
+		hashMap := map[string]string{}
+
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
@@ -36,11 +38,11 @@ func handleConnections(listener net.Listener) {
 
 		fmt.Printf("Connection %d establised !", connCount)
 
-		go handlePings(conn, connCount)
+		go handleCommand(conn, connCount, hashMap)
 	}
 }
 
-func handlePings(conn net.Conn, connID int) {
+func handleCommand(conn net.Conn, connID int, hashMap map[string]string) {
 	defer conn.Close()
 
 	pingCount := 0
@@ -63,7 +65,7 @@ func handlePings(conn net.Conn, connID int) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		returnMessage := processRequest(data)
+		returnMessage := processRequest(data, hashMap)
 
 		_, err = conn.Write([]byte(fmt.Sprintf("+%s\r\n", returnMessage)))
 
@@ -73,7 +75,7 @@ func handlePings(conn net.Conn, connID int) {
 	}
 }
 
-func processRequest(data []string) string {
+func processRequest(data []string, hashMap map[string]string) string {
 	endpoint := data[2]
 
 	switch endpoint {
@@ -81,7 +83,25 @@ func processRequest(data []string) string {
 		return data[4]
 	case "PING":
 		return "PONG"
+	case "GET":
+		return processGetRequest(data, hashMap)
+	case "SET":
+		return processSetRequest(data, hashMap)
 	default:
 		return ""
 	}
+}
+
+func processGetRequest(data []string, hashMap map[string]string) string {
+	value := hashMap[data[4]]
+
+	return fmt.Sprintf("%d\r\n%s\r\n", len(value), value)
+}
+
+func processSetRequest(data []string, hashMap map[string]string) string {
+	key, value := data[4], data[5]
+
+	hashMap[key] = value
+
+	return "+OK\r\n"
 }
