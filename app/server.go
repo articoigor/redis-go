@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"net"
 	"os"
 	"strconv"
@@ -99,21 +100,27 @@ func processRequest(data []string, hashMap map[string]HashMap) string {
 }
 
 func processGetRequest(data []string, hashMap map[string]HashMap) string {
-	now := time.Now()
-
 	key := data[4]
 
 	mapObj := hashMap[key]
 
-	fmt.Println(mapObj.createdAt - now.UnixMilli())
+	timeSpan := retrieveTimePassed(mapObj)
 
-	if mapObj.expiry > 0 && now.UnixMilli()-mapObj.createdAt <= mapObj.expiry {
+	if mapObj.expiry > 0 && timeSpan <= mapObj.expiry {
 		return mapObj.value
 	} else {
 		delete(hashMap, key)
 
 		return "$-1"
 	}
+}
+
+func retrieveTimePassed(mapObj HashMap) int64 {
+	milli := float64(time.Now().UnixMilli())
+
+	createdAt := float64(mapObj.createdAt)
+
+	return int64(math.Abs(milli - createdAt))
 }
 
 func processSetRequest(data []string, hashMap map[string]HashMap) string {
