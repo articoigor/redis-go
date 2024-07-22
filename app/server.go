@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -40,10 +42,15 @@ func handleConnections(listener net.Listener) {
 	}
 }
 
+type HashMap struct {
+	createdAt, expiry int64
+	value             string
+}
+
 func handleCommand(conn net.Conn, connID int) {
 	defer conn.Close()
 
-	hashMap := map[string]string{}
+	hashMap := map[string]HashMap{}
 
 	pingCount := 0
 
@@ -74,7 +81,7 @@ func handleCommand(conn net.Conn, connID int) {
 	}
 }
 
-func processRequest(data []string, hashMap map[string]string) string {
+func processRequest(data []string, hashMap map[string]HashMap) string {
 	endpoint := data[2]
 
 	switch endpoint {
@@ -91,18 +98,36 @@ func processRequest(data []string, hashMap map[string]string) string {
 	}
 }
 
-func processGetRequest(data []string, hashMap map[string]string) string {
-	value := hashMap[data[4]]
+func processGetRequest(data []string, hashMap map[string]HashMap) string {
+	now := time.Now()
 
-	return value
+	key := data[4]
+
+	mapObj := hashMap[key]
+
+	if mapObj.expiry > 0 && mapObj.createdAt-now.UnixMilli() <= mapObj.expiry {
+		return mapObj.value
+	} else {
+		delete(hashMap, key)
+
+		return "$-1"
+	}
 }
 
-func processSetRequest(data []string, hashMap map[string]string) string {
-	key, value := data[4], data[6]
+func processSetRequest(data []string, hashMap map[string]HashMap) string {
+	now := time.Now()
 
-	hashMap[key] = value
+	expiryVal := 0
 
-	fmt.Println(hashMap)
+	if data[8] == "px" {
+		expiryVal, _ = strconv.Atoi(data[10])
+	}
+
+	hashValue := HashMap{value: data[4], createdAt: now.UnixMilli(), expiry: int64(expiryVal)}
+
+	key := data[4]
+
+	hashMap[key] = hashValue
 
 	return "OK"
 }
