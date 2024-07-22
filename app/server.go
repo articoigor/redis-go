@@ -102,5 +102,7 @@ func processSetRequest(data []string, hashMap map[string]string) string {
 
 	hashMap[key] = value
 
+	fmt.Println(hashMap)
+
 	return "OK"
 }
