@@ -113,7 +113,7 @@ func processGetRequest(data []string, hashMap map[string]HashMap) string {
 	if mapObj.expiry > 0 && timeSpan > mapObj.expiry {
 		delete(hashMap, key)
 
-		message = "$-1"
+		message = "$-1\r\n"
 	}
 
 	return message
