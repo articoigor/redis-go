@@ -132,7 +132,7 @@ func processSetRequest(data []string, hashMap map[string]HashMap) string {
 
 	expiryVal := 0
 
-	if data[8] == "px" {
+	if len(data) > 6 && data[8] == "px" {
 		expiryVal, _ = strconv.Atoi(data[10])
 	}
 
