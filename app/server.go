@@ -65,7 +65,7 @@ func handlePings(conn net.Conn, connID int) {
 		size := len(data)
 
 		if size > 2 && data[2] == "ECHO" {
-			_, err = conn.Write([]byte(data[4]))
+			_, err = conn.Write([]byte(fmt.Sprintf("+%s\r\n", data[4])))
 
 			if err != nil {
 				fmt.Println("Error writing to connection:", err.Error())
