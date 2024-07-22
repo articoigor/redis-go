@@ -62,7 +62,7 @@ func handleCommand(conn net.Conn, connID int) {
 		}
 
 		data := strings.Split(string(buf), "\r\n")
-		fmt.Println(data[0])
+		fmt.Println(data[2])
 
 		returnMessage := processRequest(data, hashMap)
 
