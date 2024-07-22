@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"net"
 	"os"
 	"strconv"
@@ -108,7 +107,7 @@ func processGetRequest(data []string, hashMap map[string]HashMap) string {
 
 	fmt.Println(mapObj.createdAt - now.UnixMilli())
 
-	if mapObj.expiry > 0 && math.Abs(float64(mapObj.createdAt-now.UnixMilli())) <= float64(mapObj.expiry) {
+	if mapObj.expiry > 0 && now.UnixMilli()-mapObj.createdAt <= mapObj.expiry {
 		return mapObj.value
 	} else {
 		delete(hashMap, key)
