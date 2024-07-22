@@ -98,12 +98,8 @@ func processGetRequest(data []string, hashMap map[string]string) string {
 }
 
 func processSetRequest(data []string, hashMap map[string]string) string {
-	fmt.Printf("%s %s", data[4], data[6])
 	key, value := data[4], data[6]
 
-	fmt.Println("AQUI")
-
-	fmt.Printf("Key: %s, Value: %s", key, value)
 	hashMap[key] = value
 
 	return "OK"
