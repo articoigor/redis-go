@@ -5,6 +5,7 @@ import (
 	"math"
 	"net"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -70,9 +71,8 @@ func handleCommand(conn net.Conn, connID int) {
 		}
 
 		data := strings.Split(string(buf), "\r\n")
-		fmt.Println(string(buf))
 
-		returnMessage := processRequest(data, hashMap)
+		returnMessage := processRequest(data, string(buf), hashMap)
 
 		fmt.Println(returnMessage)
 
@@ -84,7 +84,7 @@ func handleCommand(conn net.Conn, connID int) {
 	}
 }
 
-func processRequest(data []string, hashMap map[string]HashMap) string {
+func processRequest(data []string, req string, hashMap map[string]HashMap) string {
 	endpoint := data[2]
 
 	switch endpoint {
@@ -95,7 +95,7 @@ func processRequest(data []string, hashMap map[string]HashMap) string {
 	case "GET":
 		return processGetRequest(data, hashMap)
 	case "SET":
-		return processSetRequest(data, hashMap)
+		return processSetRequest(data, req, hashMap)
 	default:
 		return ""
 	}
@@ -127,12 +127,14 @@ func retrieveTimePassed(mapObj HashMap) int64 {
 	return int64(math.Abs(milli - createdAt))
 }
 
-func processSetRequest(data []string, hashMap map[string]HashMap) string {
+func processSetRequest(data []string, req string, hashMap map[string]HashMap) string {
 	now := time.Now()
 
 	expiryVal := 0
 
-	if len(data) > 6 && data[8] == "px" {
+	regex, _ := regexp.Compile("px")
+
+	if regex.MatchString(req) {
 		expiryVal, _ = strconv.Atoi(data[10])
 	}
 
