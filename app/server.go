@@ -26,8 +26,6 @@ func handleConnections(listener net.Listener) {
 	for {
 		conn, err := listener.Accept()
 
-		hashMap := map[string]string{}
-
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
@@ -38,12 +36,14 @@ func handleConnections(listener net.Listener) {
 
 		fmt.Printf("Connection %d establised !", connCount)
 
-		go handleCommand(conn, connCount, hashMap)
+		go handleCommand(conn, connCount)
 	}
 }
 
-func handleCommand(conn net.Conn, connID int, hashMap map[string]string) {
+func handleCommand(conn net.Conn, connID int) {
 	defer conn.Close()
+
+	hashMap := map[string]string{}
 
 	pingCount := 0
 
