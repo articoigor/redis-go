@@ -59,7 +59,7 @@ func handlePings(conn net.Conn, connID int) {
 			break
 		}
 
-		data := strings.Split(string(buf), "\r\n")
+		data := strings.Split(string(buf), `\r\n`)
 
 		size := len(data)
 
