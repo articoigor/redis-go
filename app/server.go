@@ -76,7 +76,7 @@ func handleCommand(conn net.Conn, connID int) {
 
 		fmt.Println(returnMessage)
 
-		_, err = conn.Write([]byte(fmt.Sprintf("+%s\r\n", returnMessage)))
+		_, err = conn.Write([]byte(fmt.Sprintf("%s\r\n", returnMessage)))
 
 		if err != nil {
 			fmt.Println("Error writing to connection:", err.Error())
@@ -91,7 +91,7 @@ func processRequest(data []string, hashMap map[string]HashMap) string {
 	case "ECHO":
 		return data[4]
 	case "PING":
-		return "PONG"
+		return "+" + "PONG"
 	case "GET":
 		return processGetRequest(data, hashMap)
 	case "SET":
@@ -113,7 +113,7 @@ func processGetRequest(data []string, hashMap map[string]HashMap) string {
 	if mapObj.expiry > 0 && timeSpan > mapObj.expiry {
 		delete(hashMap, key)
 
-		message = "$-1\r\n"
+		message = "$-1"
 	}
 
 	return message
