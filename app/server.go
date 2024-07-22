@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -58,10 +59,17 @@ func handlePings(conn net.Conn, connID int) {
 			break
 		}
 
-		_, err = conn.Write([]byte("+PONG\r\n"))
-		if err != nil {
-			fmt.Println("Error writing to connection:", err.Error())
-			break
+		data := strings.Split(string(buf), "\r\n")
+
+		size := len(data)
+
+		if size > 2 && data[2] == "ECHO" {
+			_, err = conn.Write([]byte(data[3]))
+
+			if err != nil {
+				fmt.Println("Error writing to connection:", err.Error())
+				break
+			}
 		}
 	}
 }
