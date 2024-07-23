@@ -141,7 +141,7 @@ func processRequest(data []string, req string, server Server) string {
 }
 
 func processInfoRequest(server Server) string {
-	return fmt.Sprintf("$87\r\nrole:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d\r\n", server.role, server.replicationId, server.offset)
+	return fmt.Sprintf("$87\r\nrole:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 }
 
 func processGetRequest(data []string, hashMap map[string]HashMap) string {
