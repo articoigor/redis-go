@@ -147,9 +147,9 @@ func processInfoRequest(server Server) string {
 
 	repId := fmt.Sprintf("$%d\r\n%s", len(repIdText), repIdText)
 
-	offsetText := "master_repl_offset:"
+	offsetText := "master_repl_offset:0"
 
-	offset := fmt.Sprintf("\r\n$%d\r\n%s%d", len(offsetText)+1, offsetText, server.offset)
+	offset := fmt.Sprintf("\r\n$11\r\n%s", offsetText)
 
 	roleText := "role:"
 
