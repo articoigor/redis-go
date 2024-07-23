@@ -155,7 +155,11 @@ func processInfoRequest(server Server) string {
 
 	role := fmt.Sprintf("$%d\r\n%s%s", len(roleText+server.role), roleText, server.role)
 
-	return offset + repId + role
+	res := offset + repId + role
+
+	fmt.Println(res)
+
+	return res
 }
 func processGetRequest(data []string, hashMap map[string]HashMap) string {
 	key := data[4]
