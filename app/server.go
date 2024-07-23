@@ -134,9 +134,7 @@ func processRequest(data []string, req string, server Server) string {
 	case "GET":
 		return processGetRequest(data, hashMap)
 	case "INFO":
-		role := "role:" + server.role
-
-		return fmt.Sprintf("$%d\r\n%s", len(role), role)
+		return processInfoRequest(server)
 	case "SET":
 		return processSetRequest(data, req, hashMap)
 	default:
@@ -144,6 +142,13 @@ func processRequest(data []string, req string, server Server) string {
 	}
 }
 
+func processInfoRequest(server Server) string {
+	role := "role:" + server.role
+
+	offset := fmt.Sprintf("master_repl_offset:%d", server.offset)
+
+	return fmt.Sprintf("$%d\r\n%s\r\n$%d\r\n%s", len(role), role, len(offset), offset)
+}
 func processGetRequest(data []string, hashMap map[string]HashMap) string {
 	key := data[4]
 
