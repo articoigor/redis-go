@@ -22,6 +22,7 @@ func main() {
 	fmt.Println(port)
 	// Parse the command-line flags
 	flag.Parse()
+	fmt.Println(port)
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
