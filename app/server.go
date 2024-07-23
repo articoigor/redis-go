@@ -111,8 +111,6 @@ func handleCommand(conn net.Conn, connID int, serverRole string) {
 
 		returnMessage := processRequest(data, string(buf), server)
 
-		fmt.Println(returnMessage)
-
 		_, err = conn.Write([]byte(fmt.Sprintf("%s\r\n", returnMessage)))
 
 		if err != nil {
