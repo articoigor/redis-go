@@ -143,13 +143,17 @@ func processRequest(data []string, req string, server Server) string {
 }
 
 func processInfoRequest(server Server) string {
-	repId := fmt.Sprintf("master_replid:%s", server.replicationId)
+	repIdText := "master_replid:"
 
-	offset := fmt.Sprintf("master_repl_offset:%d", server.offset)
+	repId := fmt.Sprintf("$%d\r\n%s%s", len(repIdText+server.replicationId), repIdText, server.replicationId)
 
-	role := fmt.Sprintf("role:%s", server.role)
+	offsetText := "master_repl_offset:"
 
-	return fmt.Sprintf("$%d\r\n%s\r\n$%d\r\n%s\r\n$%d\r\n%s", len(repId), repId, len(offset), offset, len(role), role)
+	offset := fmt.Sprintf("$%d\r\n%s%d", len(offsetText)+1, offsetText, server.offset)
+
+	role := fmt.Sprintf("$%d\r\nrole:%s", server.role)
+
+	return repId + offset + role
 }
 func processGetRequest(data []string, hashMap map[string]HashMap) string {
 	key := data[4]
