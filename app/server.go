@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 )
 
 const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -75,7 +74,7 @@ type Server struct {
 }
 
 func generateRepId() string {
-	byteArray := make([]byte, 256)
+	byteArray := make([]byte, 40)
 
 	rand.Read(byteArray)
 
@@ -148,9 +147,9 @@ func processInfoRequest(server Server) string {
 
 	offset := fmt.Sprintf("master_repl_offset:%d", server.offset)
 
-	// role := fmt.Sprintf("role:%s", server.role)
+	role := fmt.Sprintf("role:%s", server.role)
 
-	return fmt.Sprintf("$%d\r\n%s\r\n$%d\r\n%s\r\n$%d\r\n%s", utf8.RuneCountInString(repId), repId, len(offset), offset)
+	return fmt.Sprintf("$%d\r\n%s\r\n$%d\r\n%s\r\n$%d\r\n%s", len(repId), len(offset), offset, len(role), role)
 }
 func processGetRequest(data []string, hashMap map[string]HashMap) string {
 	key := data[4]
