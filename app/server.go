@@ -119,7 +119,9 @@ func processRequest(data []string, req string, server Server) string {
 	case "GET":
 		return processGetRequest(data, hashMap)
 	case "INFO":
-		return fmt.Sprintf("$%d\r\nrole:%s", len(server.role), server.role)
+		role := "role:" + server.role
+
+		return fmt.Sprintf("$%d\r\nrole:%s", len(role), role)
 	case "SET":
 		return processSetRequest(data, req, hashMap)
 	default:
