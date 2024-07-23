@@ -149,7 +149,7 @@ func processInfoRequest(server Server) string {
 
 	repId := fmt.Sprintf("master_replid:%s", server.replicationId)
 
-	return fmt.Sprintf("$%d\r\n%s\r\n$%d\r\n%s\r\n$%d\r\n%s", len(offset), offset, len(repId), repId, len(role), role)
+	return fmt.Sprintf("$%d\r\n%s\r\n$%d\r\n%s\r\n$%d\r\n%s", len(repId), repId, len(offset), offset, len(role), role)
 }
 func processGetRequest(data []string, hashMap map[string]HashMap) string {
 	key := data[4]
