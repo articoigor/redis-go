@@ -15,7 +15,11 @@ import (
 func main() {
 	var port int
 
+	var serverRole string
+
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
+
+	flag.StringVar(&serverRole, "replicaof", "master", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
@@ -28,10 +32,10 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l)
+	handleConnections(l, serverRole)
 }
 
-func handleConnections(listener net.Listener) {
+func handleConnections(listener net.Listener, serverRole string) {
 	connCount := 0
 
 	for {
@@ -47,7 +51,7 @@ func handleConnections(listener net.Listener) {
 
 		fmt.Printf("Connection %d establised !", connCount)
 
-		go handleCommand(conn, connCount)
+		go handleCommand(conn, connCount, serverRole)
 	}
 }
 
@@ -56,10 +60,15 @@ type HashMap struct {
 	value             string
 }
 
-func handleCommand(conn net.Conn, connID int) {
+type Server struct {
+	database map[string]HashMap
+	role     string
+}
+
+func handleCommand(conn net.Conn, connID int, serverRole string) {
 	defer conn.Close()
 
-	hashMap := map[string]HashMap{}
+	server := Server{role: serverRole, database: map[string]HashMap{}}
 
 	pingCount := 0
 
@@ -81,7 +90,7 @@ func handleCommand(conn net.Conn, connID int) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		returnMessage := processRequest(data, string(buf), hashMap)
+		returnMessage := processRequest(data, string(buf), server)
 
 		fmt.Println(returnMessage)
 
@@ -93,8 +102,10 @@ func handleCommand(conn net.Conn, connID int) {
 	}
 }
 
-func processRequest(data []string, req string, hashMap map[string]HashMap) string {
+func processRequest(data []string, req string, server Server) string {
 	endpoint := data[2]
+
+	hashMap := server.database
 
 	switch endpoint {
 	case "ECHO":
@@ -104,7 +115,7 @@ func processRequest(data []string, req string, hashMap map[string]HashMap) strin
 	case "GET":
 		return processGetRequest(data, hashMap)
 	case "INFO":
-		return "$11\r\nrole:master\r\n"
+		return fmt.Sprintf("$%d\r\nrole:%s\r\n", len(server.role), server.role)
 	case "SET":
 		return processSetRequest(data, req, hashMap)
 	default:
