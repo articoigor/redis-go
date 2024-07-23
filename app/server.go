@@ -17,10 +17,10 @@ func main() {
 	var port int
 
 	// Define the flag for the port number
-	flag.IntVar(&port, "port", 8080, "Port given as argument")
+	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
 	fmt.Println(port)
-	// Parse the command-line flags
+
 	flag.Parse()
 	fmt.Println(port)
 
