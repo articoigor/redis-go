@@ -23,7 +23,9 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println(serverRole)
+	if serverRole != "master" {
+		serverRole = "slave"
+	}
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
