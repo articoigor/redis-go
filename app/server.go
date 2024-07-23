@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"flag"
 	"fmt"
 	"math"
@@ -11,6 +12,8 @@ import (
 	"strings"
 	"time"
 )
+
+const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 func main() {
 	var port int
@@ -65,14 +68,26 @@ type HashMap struct {
 }
 
 type Server struct {
-	database map[string]HashMap
-	role     string
+	database            map[string]HashMap
+	role, replicationId string
+	offset              int
+}
+
+func generateRepId() string {
+	byteArray := make([]byte, 256)
+
+	rand.Read(byteArray)
+
+	for i, b := range byteArray {
+		byteArray[i] = alphaNumeric[b%byte(len(alphaNumeric))]
+	}
+	return string(byteArray)
 }
 
 func handleCommand(conn net.Conn, connID int, serverRole string) {
 	defer conn.Close()
 
-	server := Server{role: serverRole, database: map[string]HashMap{}}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0}
 
 	pingCount := 0
 
