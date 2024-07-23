@@ -13,16 +13,11 @@ import (
 )
 
 func main() {
-	// Define a variable to hold the port number
 	var port int
 
-	// Define the flag for the port number
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	fmt.Println(port)
-
 	flag.Parse()
-	fmt.Println(port)
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
@@ -108,6 +103,8 @@ func processRequest(data []string, req string, hashMap map[string]HashMap) strin
 		return "+" + "PONG"
 	case "GET":
 		return processGetRequest(data, hashMap)
+	case "INFO":
+		return "$11\r\nrole:master\r\n"
 	case "SET":
 		return processSetRequest(data, req, hashMap)
 	default:
