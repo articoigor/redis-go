@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math"
 	"net"
@@ -12,7 +13,16 @@ import (
 )
 
 func main() {
-	l, err := net.Listen("tcp", "0.0.0.0:6379")
+	// Define a variable to hold the port number
+	var port int
+
+	// Define the flag for the port number
+	flag.IntVar(&port, "port", 8080, "Port to run the server on")
+
+	// Parse the command-line flags
+	flag.Parse()
+
+	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
 		fmt.Println("Failed to bind to port 6379")
