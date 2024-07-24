@@ -55,6 +55,7 @@ func handleConnections(listener net.Listener, serverRole, replicaMaster string) 
 
 			continue
 		}
+		fmt.Println("teste")
 
 		connCount++
 
