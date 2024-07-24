@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"math"
@@ -199,9 +200,8 @@ func processReplconf(conn net.Conn, req string, server Server) {
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
-		fmt.Println(uri[2])
+
 		server.subscriberPort = uri[2]
-		fmt.Println(server.subscriberPort)
 	}
 
 	conn.Write([]byte("+OK\r\n"))
@@ -281,6 +281,8 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
+		res2B, _ := json.Marshal(server)
+		fmt.Println(string(res2B))
 		propagateToReplica(hashValue, server)
 	}
 }
