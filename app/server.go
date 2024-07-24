@@ -275,7 +275,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 	fmt.Println(server.role)
-	address := conn.RemoteAddr().String()
+	address := conn.LocalAddr().String()
 	fmt.Println(address)
 	if server.role == "master" {
 		propagatingConn, err := net.Dial("tcp", address)
