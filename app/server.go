@@ -184,6 +184,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
+		fmt.Printf("Server is in port %s and has %d replicas", server.host, len(server.replicas))
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replicas = append(server.replicas, uri[2])
