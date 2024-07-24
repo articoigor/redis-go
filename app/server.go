@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"math"
@@ -281,8 +280,8 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		res2B, _ := json.Marshal(server)
-		fmt.Println(string(res2B))
+		fmt.Println(server.replicationId)
+		fmt.Println(server.subscriberPort)
 		propagateToReplica(hashValue, server)
 	}
 }
