@@ -188,19 +188,21 @@ func processRequest(data []string, req string, server Server) string {
 
 	fmt.Println(endpoint)
 
-	switch {
-	case endpoint == "ECHO":
+	switch endpoint {
+	case "ECHO":
 		return "+" + data[4]
-	case endpoint == "PING":
+	case "PING":
 		return "+" + "PONG"
-	case endpoint == "GET":
+	case "GET":
 		return processGetRequest(data, hashMap)
-	case endpoint == "INFO":
+	case "INFO":
 		return processInfoRequest(server)
-	case endpoint == "SET":
+	case "SET":
 		return processSetRequest(data, req, hashMap)
-	case endpoint == "REPLCONF" || endpoint == "PSYNC":
+	case "REPLCONF":
 		return "+OK"
+	case "PSYNC":
+		return fmt.Sprintln("+FULLRESYNC %s 0", server.replicationId)
 	default:
 		return ""
 	}
