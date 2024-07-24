@@ -57,6 +57,8 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 
 		conn, err := listener.Accept()
 
+		fmt.Printf("replica port: %s", server.replica)
+
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
@@ -200,8 +202,6 @@ func processReplconf(conn net.Conn, req string, server Server) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replica = uri[2]
-
-		fmt.Printf("replica port: %s", server.replica)
 	}
 
 	conn.Write([]byte("+OK\r\n"))
