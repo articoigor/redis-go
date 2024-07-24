@@ -24,12 +24,12 @@ func main() {
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
+	flag.StringVar(&replicaMaster, "replicaof", "", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
-	if replicaMaster != "master" {
-		serverRole = "slave"
+	if replicaMaster != "" {
+		serverRole = "master"
 	}
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
@@ -50,18 +50,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	connCount := 0
 
 	for {
-
-		master := strings.Split(masterUri, " ")
-
-		if serverRole != "master" && len(master) > 1 {
-			masterAddress := strings.Join(master, ":")
-
-			conn, err := net.Dial("tcp", masterAddress)
-
-			if err == nil {
-				conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-			}
-		} else {
+		if masterUri == "" {
 			fmt.Println("entrou aqui")
 			conn, err := listener.Accept()
 
@@ -76,6 +65,15 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 			fmt.Printf("Connection %d establised !", connCount)
 
 			go handleCommand(conn, connCount, serverRole)
+		} else {
+			masterAddress := strings.Join(strings.Split(masterUri, " "), ":")
+
+			conn, err := net.Dial("tcp", masterAddress)
+
+			if err == nil {
+				conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+			}
+
 		}
 	}
 }
