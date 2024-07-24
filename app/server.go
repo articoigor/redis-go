@@ -43,14 +43,14 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, serverRole, replicaMaster)
+	handleConnections(l, serverRole, replicaMaster, port)
 }
 
-func handleConnections(listener net.Listener, serverRole, masterUri string) {
+func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	connCount := 0
 
 	for {
-		sendHandshake(masterUri)
+		sendHandshake(masterUri, port)
 
 		conn, err := listener.Accept()
 
@@ -68,7 +68,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	}
 }
 
-func sendHandshake(masterUri string) {
+func sendHandshake(masterUri string, port int) {
 	if len(masterUri) > 0 {
 		master := strings.Split(masterUri, " ")
 
@@ -85,13 +85,15 @@ func sendHandshake(masterUri string) {
 		_, err = conn.Read(handshakeRes)
 
 		if err == nil {
-			sendReplconf(conn, master[1])
+			sendReplconf(conn, port)
 		}
 	}
 }
 
-func sendReplconf(conn net.Conn, port string) {
-	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", len(port), port)
+func sendReplconf(conn net.Conn, port int) {
+	strPort := strconv.Itoa(port)
+
+	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", len(strPort), strPort)
 
 	conn.Write([]byte(confirmationStr))
 }
