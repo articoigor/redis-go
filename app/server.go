@@ -51,7 +51,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 
 		if subscriberPort > 0 {
 			server.role = "subscriber"
-
+		} else {
 			server.replicas[0] = strconv.Itoa(port)
 		}
 
