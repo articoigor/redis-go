@@ -18,15 +18,17 @@ const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345
 func main() {
 	var port int
 
-	var serverRole string
+	var replicaMaster string
+
+	serverRole := "slave"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&serverRole, "replicaof", "master", "Role assigned to the current connection replica")
+	flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
-	if serverRole != "master" {
+	if replicaMaster != "master" {
 		serverRole = "slave"
 	}
 
@@ -39,10 +41,10 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, serverRole)
+	handleConnections(l, serverRole, replicaMaster)
 }
 
-func handleConnections(listener net.Listener, serverRole string) {
+func handleConnections(listener net.Listener, serverRole, replicaMaster string) {
 	connCount := 0
 
 	for {
@@ -58,7 +60,7 @@ func handleConnections(listener net.Listener, serverRole string) {
 
 		fmt.Printf("Connection %d establised !", connCount)
 
-		go handleCommand(conn, connCount, serverRole)
+		go handleCommand(conn, connCount, serverRole, replicaMaster)
 	}
 }
 
@@ -68,9 +70,10 @@ type HashMap struct {
 }
 
 type Server struct {
-	database            map[string]HashMap
-	role, replicationId string
-	offset              int
+	database                  map[string]HashMap
+	role, replicationId, host string
+	offset, port              int
+	subscribers               []string
 }
 
 func generateRepId() string {
@@ -84,10 +87,12 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func handleCommand(conn net.Conn, connID int, serverRole string) {
+func handleCommand(conn net.Conn, connID int, serverRole, replicaMaster string) {
 	defer conn.Close()
 
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0}
+	// replica := strings.Split(replicaMaster, " ")
+
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0, host: "", port: 0}
 
 	pingCount := 0
 
@@ -108,7 +113,7 @@ func handleCommand(conn net.Conn, connID int, serverRole string) {
 		}
 
 		data := strings.Split(string(buf), "\r\n")
-
+		fmt.Println(string(buf))
 		returnMessage := processRequest(data, string(buf), server)
 
 		_, err = conn.Write([]byte(fmt.Sprintf("%s\r\n", returnMessage)))
