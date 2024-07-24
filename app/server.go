@@ -51,7 +51,8 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 
 		if subscriberConn != nil {
 			server.role = "subscriber"
-
+			go handleCommand(subscriberConn, server)
+		} else {
 			conn, err := listener.Accept()
 
 			if err != nil {
@@ -61,8 +62,6 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 			}
 
 			go handleCommand(conn, server)
-		} else {
-			go handleCommand(subscriberConn, server)
 		}
 	}
 }
