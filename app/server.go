@@ -198,8 +198,6 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 		conn.Write([]byte("+OK"))
 	case "PSYNC":
 		processPsync(conn, server)
-	default:
-		return ""
 	}
 }
 
