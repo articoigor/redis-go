@@ -144,9 +144,11 @@ func generateRepId() string {
 func handleCommand(conn net.Conn, connID int, serverRole string) {
 	defer conn.Close()
 
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), subscriber: "", offset: 0}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0}
 
 	pingCount := 0
+
+	subscriberPort := ""
 
 	for {
 		pingCount++
@@ -164,15 +166,14 @@ func handleCommand(conn net.Conn, connID int, serverRole string) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		processRequest(data, string(buf), server, conn)
+		processRequest(data, string(buf), server, conn, subscriberPort)
 	}
 }
 
-func processRequest(data []string, req string, server Server, conn net.Conn) {
+func processRequest(data []string, req string, server Server, conn net.Conn, subscriberPort string) {
 	endpoint := data[2]
 
 	hashMap := server.database
-	fmt.Println(endpoint)
 
 	switch endpoint {
 	case "ECHO":
@@ -184,9 +185,9 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "INFO":
 		processInfoRequest(server, conn)
 	case "SET":
-		processSetRequest(data, req, hashMap, conn, server)
+		processSetRequest(data, req, hashMap, conn, server, subscriberPort)
 	case "REPLCONF":
-		processReplconf(conn, req, server)
+		processReplconf(conn, req, subscriberPort)
 	case "PSYNC":
 		processPsync(conn, server)
 	default:
@@ -194,13 +195,13 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn, req string, server Server) {
+func processReplconf(conn net.Conn, req string, subscriberPort string) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		server.subscriber = uri[2]
+		subscriberPort = uri[2]
 	}
 
 	conn.Write([]byte("+OK\r\n"))
@@ -256,7 +257,7 @@ func retrieveTimePassed(mapObj HashMap) int64 {
 	return int64(math.Abs(milli - createdAt))
 }
 
-func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn, server Server) {
+func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn, server Server, subscriberPort string) {
 	now := time.Now()
 
 	expiryVal := 0
@@ -280,7 +281,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		fmt.Println(server.subscriber)
+		fmt.Println(subscriberPort)
 		fmt.Println(server.replicationId)
 
 		propagateToReplica(hashValue, server)
