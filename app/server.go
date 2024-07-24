@@ -186,7 +186,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "SET":
 		processSetRequest(data, req, hashMap, conn, server)
 	case "REPLCONF":
-		processReplconf(conn)
+		processReplconf(conn, data)
 	case "PSYNC":
 		processPsync(conn, server)
 	default:
@@ -194,13 +194,12 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn) {
-	replica := make([]byte, 128)
+func processReplconf(conn net.Conn, data []string) {
+	// replica := make([]byte, 128)
 
 	fmt.Println("TESTE ************")
-	conn.Read(replica)
 
-	fmt.Println(string(replica))
+	fmt.Println(data)
 
 	conn.Write([]byte("+OK\r\n"))
 }
