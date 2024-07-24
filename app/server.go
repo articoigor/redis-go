@@ -186,7 +186,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "INFO":
 		processInfoRequest(server, conn)
 	case "SET":
-		processSetRequest(data, req, hashMap, conn)
+		processSetRequest(data, req, hashMap, conn, server)
 	case "REPLCONF":
 		conn.Write([]byte("+OK\r\n"))
 	case "PSYNC":
@@ -246,7 +246,7 @@ func retrieveTimePassed(mapObj HashMap) int64 {
 	return int64(math.Abs(milli - createdAt))
 }
 
-func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn) {
+func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn, server Server) {
 	now := time.Now()
 
 	expiryVal := 0
@@ -269,11 +269,13 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$3\r\nbar\r\n", len(hashValue.value), hashValue.value)
+	if server.role == "master" {
+		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$3\r\nbar\r\n", len(hashValue.value), hashValue.value)
 
-	_, err = conn.Write([]byte(message))
+		_, err = conn.Write([]byte(message))
 
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
+		if err != nil {
+			fmt.Println("Error writing to connection:", err.Error())
+		}
 	}
 }
