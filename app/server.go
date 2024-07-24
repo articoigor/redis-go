@@ -272,22 +272,24 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		propagateToReplica(server.replicas[0], key, hashValue.value)
+		propagateToReplica(server, key, hashValue.value)
 	}
 }
 
-func propagateToReplica(subscriber, key, value string) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", subscriber))
+func propagateToReplica(server Server, key, value string) {
+	for _, subscriber := range server.replicas {
+		conn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", subscriber))
 
-	if err != nil {
-		fmt.Println("Error dialing to subscriber:", err.Error())
-	}
+		if err != nil {
+			fmt.Println("Error dialing to subscriber:", err.Error())
+		}
 
-	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-	fmt.Println(fmt.Sprintf("localhost:%s", subscriber))
-	_, err = conn.Write([]byte(message))
+		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+		fmt.Sprintf("0.0.0.0:%s", subscriber)
+		_, err = conn.Write([]byte(message))
 
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
+		if err != nil {
+			fmt.Println("Error writing to connection:", err.Error())
+		}
 	}
 }
