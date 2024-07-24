@@ -125,9 +125,9 @@ type HashMap struct {
 }
 
 type Server struct {
-	database            map[string]HashMap
-	role, replicationId string
-	offset              int
+	database                            map[string]HashMap
+	role, replicationId, subscriberPort string
+	offset                              int
 }
 
 func generateRepId() string {
@@ -144,7 +144,7 @@ func generateRepId() string {
 func handleCommand(conn net.Conn, connID int, serverRole string) {
 	defer conn.Close()
 
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), subscriberPort: "", offset: 0}
 
 	pingCount := 0
 
@@ -264,6 +264,14 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	hashMap[key] = hashValue
 
 	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", "+OK")))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
+
+	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$3\r\nbar\r\n", len(hashValue.value), hashValue.value)
+
+	_, err = conn.Write([]byte(message))
 
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
