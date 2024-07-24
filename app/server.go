@@ -106,6 +106,7 @@ func sendReplconf(conn net.Conn, port int) {
 
 	isOk := err != nil && regexp.MustCompile("OK").MatchString(string(firstRes))
 
+	fmt.Println(isOk)
 	if isOk {
 		conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n"))
 	}
