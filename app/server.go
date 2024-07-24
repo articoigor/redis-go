@@ -186,7 +186,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "SET":
 		processSetRequest(data, req, hashMap, conn, server)
 	case "REPLCONF":
-		processReplconf(conn, data)
+		processReplconf(conn, req, server)
 	case "PSYNC":
 		processPsync(conn, server)
 	default:
@@ -194,12 +194,19 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn, data []string) {
-	// replica := make([]byte, 128)
+func processReplconf(conn net.Conn, req string, server Server) {
+	re := regexp.MustCompile(`listening-port\s+(\S+)`)
 
-	fmt.Println("TESTE ************")
+	if re.MatchString(req) {
+		matches := re.FindStringSubmatch(req)
 
-	fmt.Println(data)
+		if len(matches) > 1 {
+			fmt.Println("**********")
+			fmt.Printf("The element following 'listening-port' is: %s\n", matches[1])
+		} else {
+			fmt.Println("No match found")
+		}
+	}
 
 	conn.Write([]byte("+OK\r\n"))
 }
