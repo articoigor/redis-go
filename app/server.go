@@ -50,7 +50,7 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	connCount := 0
 
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "?", offset: 0}
 
 	for {
 		sendHandshake(masterUri, port)
