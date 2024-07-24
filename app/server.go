@@ -90,12 +90,12 @@ func sendHandshake(masterUri string, port int) {
 		_, err = conn.Read(handshakeRes)
 
 		if err == nil {
-			sendReplconf(conn, strconv.Itoa(port), master[1])
+			sendReplconf(conn, strconv.Itoa(port))
 		}
 	}
 }
 
-func sendReplconf(conn net.Conn, port string, masterPort string) {
+func sendReplconf(conn net.Conn, port string) {
 	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
 
 	conn.Write([]byte(confirmationStr))
