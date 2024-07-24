@@ -45,29 +45,29 @@ func main() {
 
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	for {
-		subscriberConn := sendHandshake(masterUri, port)
+		subscriberPort := sendHandshake(masterUri, port)
 
 		server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
 
-		if subscriberConn != nil {
+		if subscriberPort > 0 {
 			server.role = "subscriber"
 
-			go handleCommand(subscriberConn, server)
-		} else {
-			conn, err := listener.Accept()
-
-			if err != nil {
-				fmt.Println("Error accepting connection:", err.Error())
-
-				continue
-			}
-
-			go handleCommand(conn, server)
+			server.replicas[0] = strconv.Itoa(port)
 		}
+
+		conn, err := listener.Accept()
+
+		if err != nil {
+			fmt.Println("Error accepting connection:", err.Error())
+
+			continue
+		}
+
+		go handleCommand(conn, server)
 	}
 }
 
-func sendHandshake(masterUri string, port int) net.Conn {
+func sendHandshake(masterUri string, port int) int {
 	if len(masterUri) > 0 {
 		master := strings.Split(masterUri, " ")
 
@@ -87,10 +87,10 @@ func sendHandshake(masterUri string, port int) net.Conn {
 			sendReplconf(conn, strconv.Itoa(port))
 		}
 
-		return conn
+		return port
 	}
 
-	return nil
+	return 0
 }
 
 func sendReplconf(conn net.Conn, port string) {
@@ -271,13 +271,11 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 	fmt.Println(server.role)
-
+	fmt.Println(len(server.replicas))
 	if server.role == "master" {
-		if err != nil {
-			message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
+		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
 
-			conn.Write([]byte(message))
-		}
+		conn.Write([]byte(message))
 	}
 }
 
