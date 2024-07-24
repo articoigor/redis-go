@@ -200,7 +200,13 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	if re.MatchString(req) {
 		uri := re.FindStringSubmatch(req)
 
-		server.subscriberPort = uri[1]
+		if len(uri) > 1 {
+			server.subscriberPort = uri[1]
+		} else {
+			fmt.Println(`Subscriber port: \r\n`)
+			fmt.Println(server.subscriberPort)
+		}
+
 	}
 
 	conn.Write([]byte("+OK\r\n"))
