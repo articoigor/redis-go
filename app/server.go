@@ -148,8 +148,6 @@ func handleCommand(conn net.Conn, connID int, serverRole string) {
 
 	pingCount := 0
 
-	subscriberPort := ""
-
 	for {
 		pingCount++
 
@@ -202,6 +200,8 @@ func processReplconf(conn net.Conn, req string, server Server) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replica = uri[2]
+
+		fmt.Printf("replica port: %s", server.replica)
 	}
 
 	conn.Write([]byte("+OK\r\n"))
