@@ -78,9 +78,9 @@ func sendHandshake(masterUri string) {
 
 		if err == nil {
 			conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-		}
 
-		sendReplconf(conn, master[1])
+			sendReplconf(conn, master[1])
+		}
 	}
 }
 
