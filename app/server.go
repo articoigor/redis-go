@@ -50,12 +50,12 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	connCount := 0
 
-	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
-
 	for {
 		sendHandshake(masterUri, port)
 
 		conn, err := listener.Accept()
+
+		server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
 
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
