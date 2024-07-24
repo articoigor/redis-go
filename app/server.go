@@ -16,7 +16,7 @@ import (
 const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 func main() {
-	var port int
+	var port int = 6379
 
 	var replicaMaster string = ""
 
@@ -24,7 +24,7 @@ func main() {
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	// flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
+	flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
