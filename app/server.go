@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"math"
@@ -14,8 +15,6 @@ import (
 )
 
 const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-const emptyFile = "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2"
 
 func main() {
 	var port int
@@ -204,7 +203,9 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 }
 
 func processPsync(conn net.Conn, server Server) {
-	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s\r\n"), server.replicationId, len(emptyFile), emptyFile)
+	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
+
+	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s\r\n"), server.replicationId, len(emptyRDB), emptyRDB)
 
 	conn.Write([]byte(message))
 }
