@@ -49,11 +49,9 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, replicaMaster string, port int) {
 	connCount := 0
 
-	fmt.Println("teste 1")
-
 	for {
 		conn, err := listener.Accept()
-
+		fmt.Println(conn.LocalAddr().String())
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
