@@ -177,7 +177,7 @@ func handleCommand(conn net.Conn, connID int, serverRole string) {
 	}
 }
 
-func processRequest(data []string, req string, server Server, conn net.Conn) string {
+func processRequest(data []string, req string, server Server, conn net.Conn) {
 	endpoint := data[2]
 
 	hashMap := server.database
@@ -252,7 +252,7 @@ func retrieveTimePassed(mapObj HashMap) int64 {
 	return int64(math.Abs(milli - createdAt))
 }
 
-func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn) string {
+func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn) {
 	now := time.Now()
 
 	expiryVal := 0
