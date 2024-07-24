@@ -198,14 +198,9 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening-port\s+\S+\s+(\S+)`)
 
 	if re.MatchString(req) {
-		matches := re.FindStringSubmatch(req)
+		uri := re.FindStringSubmatch(req)
 
-		if len(matches) > 1 {
-			fmt.Println("**********")
-			fmt.Printf("The element following 'listening-port' is: %s\n", matches[1])
-		} else {
-			fmt.Println("No match found")
-		}
+		server.subscriberPort = uri[1]
 	}
 
 	conn.Write([]byte("+OK\r\n"))
@@ -284,15 +279,17 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	// if server.role == "master" {
-	// 	propagateToReplica(hashValue, conn)
-	// }
+	if server.role == "master" {
+		propagateToReplica(hashValue, server)
+	}
 }
 
-func propagateToReplica(hashValue HashMap, conn net.Conn) {
+func propagateToReplica(hashValue HashMap, server Server) {
+	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", server.subscriberPort))
+
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$3\r\nbar\r\n", len(hashValue.value), hashValue.value)
 
-	_, err := conn.Write([]byte(message))
+	_, err = conn.Write([]byte(message))
 
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
