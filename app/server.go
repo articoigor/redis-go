@@ -103,7 +103,6 @@ func sendReplconf(conn net.Conn, port int) {
 
 	isOk := err == nil && regexp.MustCompile("OK").MatchString(string(firstRes))
 
-	fmt.Println(isOk)
 	if isOk {
 		conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n"))
 	}
@@ -112,7 +111,7 @@ func sendReplconf(conn net.Conn, port int) {
 
 	_, err = conn.Read(secondRes)
 
-	isOk = err != nil && regexp.MustCompile("OK").MatchString(string(secondRes))
+	isOk = err == nil && regexp.MustCompile("OK").MatchString(string(secondRes))
 
 	if isOk {
 		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3\r\n"))
