@@ -285,6 +285,8 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 }
 
 func propagateToReplica(hashValue HashMap, server Server) {
+	fmt.Println("Starting propagation of SET method on replica !")
+
 	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", server.subscriberPort))
 
 	if err != nil {
