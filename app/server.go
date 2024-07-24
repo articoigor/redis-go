@@ -149,9 +149,9 @@ func processRequest(data []string, req, replicaMaster string, servers map[int]Se
 }
 
 func processInfoRequest(servers map[int]Server, port int, replicaMaster string) string {
-	curr := servers[port]
+	server := servers[port]
 
-	if curr.role != "master" {
+	if server.role != "master" {
 		masterData := strings.Split(replicaMaster, " ")
 
 		masterHost, masterPort := masterData[0], masterData[1]
@@ -164,6 +164,7 @@ func processInfoRequest(servers map[int]Server, port int, replicaMaster string) 
 			return "*1\r\n$4\r\nPING"
 		}
 	}
+
 	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 
 	return fmt.Sprintf("$%d\r\n%s", len(str), str)
