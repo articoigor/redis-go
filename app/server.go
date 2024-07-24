@@ -49,7 +49,7 @@ func handleConnections(listener net.Listener, serverRole string) {
 
 	for {
 		conn, err := listener.Accept()
-
+		fmt.Println("Conn accepted")
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
@@ -70,9 +70,9 @@ type HashMap struct {
 }
 
 type Server struct {
-	database                  map[string]HashMap
-	role, replicationId, host string
-	offset, port              int
+	database            map[string]HashMap
+	role, replicationId string
+	offset              int
 }
 
 func generateRepId() string {
