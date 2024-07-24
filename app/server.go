@@ -201,7 +201,6 @@ func processReplconf(conn net.Conn, req string, subscriberPort *string) {
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		fmt.Printl
 		fmt.Println(uri[2])
 		*subscriberPort = uri[2]
 		fmt.Println(*subscriberPort)
