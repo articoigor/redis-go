@@ -204,7 +204,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 }
 
 func processPsync(conn net.Conn, server Server) {
-	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s\r\n"), len(emptyFile), emptyFile)
+	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s\r\n"), server.replicationId, len(emptyFile), emptyFile)
 
 	conn.Write([]byte(message))
 }
