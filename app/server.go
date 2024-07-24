@@ -50,10 +50,10 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	connCount := 0
 
 	for {
-		master := strings.Split(masterUri, " ")
 
+		master := strings.Split(masterUri, " ")
+		fmt.Println(master)
 		if serverRole != "master" && len(master) > 1 {
-			fmt.Println("ENTROU")
 			masterAddress := strings.Join(master, ":")
 
 			conn, err := net.Dial("tcp", masterAddress)
