@@ -86,6 +86,14 @@ func sendHandshake(masterUri string, port int) {
 
 		if err == nil {
 			sendReplconf(conn, port)
+
+			replconfRes := make([]byte, 128)
+
+			_, err = conn.Read(replconfRes)
+
+			if err == nil {
+				sendPsync(conn)
+			}
 		}
 	}
 }
@@ -94,6 +102,12 @@ func sendReplconf(conn net.Conn, port int) {
 	strPort := strconv.Itoa(port)
 
 	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", len(strPort), strPort)
+
+	conn.Write([]byte(confirmationStr))
+}
+
+func sendPsync(conn net.Conn) {
+	confirmationStr := fmt.Sprintf("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n")
 
 	conn.Write([]byte(confirmationStr))
 }
@@ -171,6 +185,8 @@ func processRequest(data []string, req string, server Server) string {
 		return processInfoRequest(server)
 	case "SET":
 		return processSetRequest(data, req, hashMap)
+	case "REPLCONF":
+		return "+OK"
 	default:
 		return ""
 	}
