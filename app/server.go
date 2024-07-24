@@ -101,9 +101,13 @@ func sendHandshake(masterUri string, port int) {
 func sendReplconf(conn net.Conn, port int) {
 	strPort := strconv.Itoa(port)
 
-	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n*3\r\n*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n", len(strPort), strPort)
+	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(strPort), strPort)
 
 	conn.Write([]byte(confirmationStr))
+
+	conn.Write([]byte("*3\r\n*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n"))
+
+	conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3"))
 
 	// firstResponse := make([]byte, 128)
 
@@ -114,11 +118,11 @@ func sendReplconf(conn net.Conn, port int) {
 	// }
 }
 
-func sendPsync(conn net.Conn) {
-	confirmationStr := "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3"
+// func sendPsync(conn net.Conn) {
+// 	confirmationStr := "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3"
 
-	conn.Write([]byte(confirmationStr))
-}
+// 	conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3"))
+// }
 
 type HashMap struct {
 	createdAt, expiry int64
