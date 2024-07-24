@@ -51,7 +51,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 
 	for {
 		fmt.Println(masterUri)
-		if len(masterUri) > 0 {
+		if len(masterUri) == 0 {
 			fmt.Println("entrou aqui")
 			conn, err := listener.Accept()
 
