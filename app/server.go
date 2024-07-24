@@ -18,35 +18,33 @@ const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345
 func main() {
 	var port int
 
-	var replicaof string
+	var replicaMaster string
 
-	serverRole := "master"
+	serverRole := "slave"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&replicaof, "replicaof", "master", "Role assigned to the current connection replica")
+	flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
-	if replicaof == "master" {
+	if replicaMaster != "master" {
 		serverRole = "slave"
 	}
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
-		fmt.Printf("Failed to bind to port %d", port)
+		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
-	} else {
-		fmt.Printf("Listening on port %d !", port)
 	}
 
 	defer l.Close()
 
-	handleConnections(l, serverRole, replicaof, port)
+	handleConnections(l, serverRole)
 }
 
-func handleConnections(listener net.Listener, serverRole, replicaMaster string, port int) {
+func handleConnections(listener net.Listener, serverRole string) {
 	connCount := 0
 
 	for {
@@ -55,15 +53,14 @@ func handleConnections(listener net.Listener, serverRole, replicaMaster string, 
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
-			break
+			continue
 		}
-		fmt.Println("teste 2")
 
 		connCount++
 
 		fmt.Printf("Connection %d establised !", connCount)
 
-		go handleCommand(conn, connCount, port, serverRole, replicaMaster)
+		go handleCommand(conn, connCount, serverRole)
 	}
 }
 
@@ -75,7 +72,7 @@ type HashMap struct {
 type Server struct {
 	database                  map[string]HashMap
 	role, replicationId, host string
-	offset                    int
+	offset, port              int
 }
 
 func generateRepId() string {
@@ -89,16 +86,13 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func handleCommand(conn net.Conn, connID, port int, serverRole, replicaMaster string) {
+func handleCommand(conn net.Conn, connID int, serverRole string) {
 	defer conn.Close()
 
-	servers := make(map[int]Server)
-
-	servers[port] = Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0, host: "localhost"}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0}
 
 	pingCount := 0
 
-	fmt.Println(serverRole)
 	for {
 		pingCount++
 
@@ -116,8 +110,8 @@ func handleCommand(conn net.Conn, connID, port int, serverRole, replicaMaster st
 		}
 
 		data := strings.Split(string(buf), "\r\n")
-		fmt.Println(string(buf))
-		returnMessage := processRequest(data, string(buf), replicaMaster, servers, port)
+
+		returnMessage := processRequest(data, string(buf), server)
 
 		_, err = conn.Write([]byte(fmt.Sprintf("%s\r\n", returnMessage)))
 
@@ -127,10 +121,10 @@ func handleCommand(conn net.Conn, connID, port int, serverRole, replicaMaster st
 	}
 }
 
-func processRequest(data []string, req, replicaMaster string, servers map[int]Server, port int) string {
+func processRequest(data []string, req string, server Server) string {
 	endpoint := data[2]
 
-	hashMap := servers[port].database
+	hashMap := server.database
 
 	switch endpoint {
 	case "ECHO":
@@ -140,7 +134,7 @@ func processRequest(data []string, req, replicaMaster string, servers map[int]Se
 	case "GET":
 		return processGetRequest(data, hashMap)
 	case "INFO":
-		return processInfoRequest(servers, port, replicaMaster)
+		return processInfoRequest(server)
 	case "SET":
 		return processSetRequest(data, req, hashMap)
 	default:
@@ -148,24 +142,7 @@ func processRequest(data []string, req, replicaMaster string, servers map[int]Se
 	}
 }
 
-func processInfoRequest(servers map[int]Server, port int, replicaMaster string) string {
-	server := servers[port]
-
-	if server.role != "master" {
-		fmt.Println("ENTROU")
-		masterData := strings.Split(replicaMaster, " ")
-
-		masterHost, masterPort := masterData[0], masterData[1]
-
-		portNum, _ := strconv.Atoi(masterPort)
-
-		_, err := servers[portNum]
-
-		if masterHost == "localhost" && !err {
-			return "*1\r\n$4\r\nPING"
-		}
-	}
-
+func processInfoRequest(server Server) string {
 	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 
 	return fmt.Sprintf("$%d\r\n%s", len(str), str)
