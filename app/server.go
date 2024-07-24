@@ -119,12 +119,6 @@ func sendReplconf(conn net.Conn, port int) {
 	}
 }
 
-// func sendPsync(conn net.Conn) {
-// 	confirmationStr := "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3"
-
-// 	conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3"))
-// }
-
 type HashMap struct {
 	createdAt, expiry int64
 	value             string
@@ -205,7 +199,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 func processPsync(conn net.Conn, server Server) {
 	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
 
-	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s\r\n"), server.replicationId, len(emptyRDB), emptyRDB)
+	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
 
 	conn.Write([]byte(message))
 }
