@@ -270,29 +270,26 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
 	}
-	fmt.Println(server.role)
-	fmt.Println(len(server.replicas))
-	if server.role == "master" {
-		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
 
-		conn.Write([]byte(message))
+	if server.role == "master" {
+		propagateToReplica(server.replicas[0], key, hashValue.value)
 	}
 }
 
-// func propagateToReplica(subscriber, key, value string) {
-// 	fmt.Printf("Starting propagation of SET method on replica (port %s) !", subscriber)
+func propagateToReplica(subscriber, key, value string) {
+	fmt.Printf("Starting propagation of SET method on replica (port %s) !", subscriber)
 
-// 	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", subscriber))
+	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", subscriber))
 
-// 	if err != nil {
-// 		fmt.Println("Error dialing to subscriber:", err.Error())
-// 	}
+	if err != nil {
+		fmt.Println("Error dialing to subscriber:", err.Error())
+	}
 
-// 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
 
-// 	_, err = conn.Write([]byte(message))
+	_, err = conn.Write([]byte(message))
 
-// 	if err != nil {
-// 		fmt.Println("Error writing to connection:", err.Error())
-// 	}
-// }
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
+}
