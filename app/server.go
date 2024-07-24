@@ -20,7 +20,7 @@ func main() {
 
 	var replicaMaster string
 
-	serverRole := "slave"
+	serverRole := "master"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
