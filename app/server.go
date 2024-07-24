@@ -187,7 +187,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn, sub
 	case "SET":
 		processSetRequest(data, req, hashMap, conn, server, &subscriberPort)
 	case "REPLCONF":
-		processReplconf(conn, req, &subscriberPort)
+		processReplconf(conn, req, &subscriberPort, server)
 	case "PSYNC":
 		processPsync(conn, server)
 	default:
@@ -195,10 +195,10 @@ func processRequest(data []string, req string, server Server, conn net.Conn, sub
 	}
 }
 
-func processReplconf(conn net.Conn, req string, subscriberPort *string) {
+func processReplconf(conn net.Conn, req string, subscriberPort *string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
-	if re.MatchString(req) {
+	if re.MatchString(req) && server.role == "master" {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		*subscriberPort = uri[2]
