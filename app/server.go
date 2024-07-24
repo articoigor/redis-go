@@ -188,20 +188,18 @@ func processRequest(data []string, req string, server Server) string {
 
 	fmt.Println(endpoint)
 
-	switch endpoint {
-	case "ECHO":
+	switch {
+	case endpoint == "ECHO":
 		return "+" + data[4]
-	case "PING":
+	case endpoint == "PING":
 		return "+" + "PONG"
-	case "GET":
+	case endpoint == "GET":
 		return processGetRequest(data, hashMap)
-	case "INFO":
+	case endpoint == "INFO":
 		return processInfoRequest(server)
-	case "SET":
+	case endpoint == "SET":
 		return processSetRequest(data, req, hashMap)
-	case "REPLCONF":
-		return "+OK"
-	case "PSYNC":
+	case endpoint == "REPLCONF" || endpoint == "PSYNC":
 		return "+OK"
 	default:
 		return ""
