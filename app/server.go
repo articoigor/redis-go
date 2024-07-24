@@ -50,14 +50,14 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	connCount := 0
 
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "?", offset: 0}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{"?"}, offset: 0}
 
 	for {
 		sendHandshake(masterUri, port)
 
 		conn, err := listener.Accept()
 
-		fmt.Printf("replica port: %s", server.replica)
+		fmt.Printf("replica port: %s", server.replicas[0])
 
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
@@ -96,8 +96,6 @@ func sendHandshake(masterUri string, port int) {
 }
 
 func sendReplconf(conn net.Conn, port string, masterPort string) {
-	fmt.Printf("\r\n")
-	fmt.Println(masterPort, port)
 	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
 
 	conn.Write([]byte(confirmationStr))
@@ -129,9 +127,10 @@ type HashMap struct {
 }
 
 type Server struct {
-	database                     map[string]HashMap
-	role, replicationId, replica string
-	offset                       int
+	database            map[string]HashMap
+	replicas            []string
+	role, replicationId string
+	offset              int
 }
 
 func generateRepId() string {
@@ -201,9 +200,9 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	if re.MatchString(req) && server.role == "master" {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		server.replica = uri[2]
+		server.replicas = append(server.replicas, uri[2])
 
-		fmt.Printf("replica after setting: %s", server.replica)
+		fmt.Printf("replica after setting: %s", server.replicas[0])
 	}
 
 	conn.Write([]byte("+OK\r\n"))
@@ -283,10 +282,10 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		fmt.Println(server.replica)
+		fmt.Println(server.replicas[0])
 		fmt.Println(server.replicationId)
 
-		propagateToReplica(server.replica, key, hashValue.value)
+		propagateToReplica(server.replicas[0], key, hashValue.value)
 	}
 }
 
