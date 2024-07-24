@@ -43,26 +43,38 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, serverRole)
+	handleConnections(l, serverRole, replicaMaster)
 }
 
-func handleConnections(listener net.Listener, serverRole string) {
+func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	connCount := 0
 
 	for {
-		conn, err := listener.Accept()
-		fmt.Println("Conn accepted")
-		if err != nil {
-			fmt.Println("Error accepting connection:", err.Error())
+		if serverRole != "master" {
+			masterAddress := strings.Join(strings.Split(masterUri, " "), ":")
 
-			continue
+			conn, err := net.Dial("tcp", masterAddress)
+
+			defer conn.Close()
+
+			if err == nil {
+				conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+			}
+		} else {
+			conn, err := listener.Accept()
+
+			if err != nil {
+				fmt.Println("Error accepting connection:", err.Error())
+
+				continue
+			}
+
+			connCount++
+
+			fmt.Printf("Connection %d establised !", connCount)
+
+			go handleCommand(conn, connCount, serverRole)
 		}
-
-		connCount++
-
-		fmt.Printf("Connection %d establised !", connCount)
-
-		go handleCommand(conn, connCount, serverRole)
 	}
 }
 
