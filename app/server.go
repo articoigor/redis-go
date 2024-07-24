@@ -182,6 +182,8 @@ func processRequest(data []string, req string, server Server) string {
 
 	hashMap := server.database
 
+	fmt.Println(endpoint)
+
 	switch endpoint {
 	case "ECHO":
 		return "+" + data[4]
