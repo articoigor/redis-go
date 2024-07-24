@@ -50,22 +50,8 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	connCount := 0
 
 	for {
-		if len(masterUri) == 0 {
+		if len(masterUri) > 0 {
 			fmt.Println(0)
-			conn, err := listener.Accept()
-
-			if err != nil {
-				fmt.Println("Error accepting connection:", err.Error())
-
-				continue
-			}
-
-			connCount++
-
-			fmt.Printf("Connection %d establised !", connCount)
-
-			go handleCommand(conn, connCount, serverRole)
-		} else {
 			masterAddress := strings.Join(strings.Split(masterUri, " "), ":")
 
 			conn, err := net.Dial("tcp", masterAddress)
@@ -75,6 +61,21 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 			}
 
 		}
+
+		fmt.Println(0)
+		conn, err := listener.Accept()
+
+		if err != nil {
+			fmt.Println("Error accepting connection:", err.Error())
+
+			continue
+		}
+
+		connCount++
+
+		fmt.Printf("Connection %d establised !", connCount)
+
+		go handleCommand(conn, connCount, serverRole)
 	}
 }
 
