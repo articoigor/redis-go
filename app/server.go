@@ -199,6 +199,10 @@ func processRequest(data []string, req string, server Server) string {
 		return processInfoRequest(server)
 	case "SET":
 		return processSetRequest(data, req, hashMap)
+	case "REPLCONF":
+		return "+OK"
+	case "PSYNC":
+		return "+OK"
 	default:
 		return ""
 	}
