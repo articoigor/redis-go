@@ -15,6 +15,8 @@ import (
 
 const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
+const emptyFile = "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2"
+
 func main() {
 	var port int
 
@@ -115,6 +117,16 @@ func sendReplconf(conn net.Conn, port int) {
 
 	if isOk {
 		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"))
+	}
+
+	thirdRes := make([]byte, 128)
+
+	_, err = conn.Read(thirdRes)
+
+	isOk = err == nil && regexp.MustCompile("OK").MatchString(string(thirdRes))
+
+	if isOk {
+		conn.Write([]byte(fmt.Sprintf(("$%d\r\n%s"), len(emptyFile), emptyFile)))
 	}
 }
 
