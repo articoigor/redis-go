@@ -50,7 +50,7 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	connCount := 0
 
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{"?"}, offset: 0}
+	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{"?"}, offset: 0}
 
 	for {
 		sendHandshake(masterUri, port)
@@ -127,10 +127,10 @@ type HashMap struct {
 }
 
 type Server struct {
-	database            map[string]HashMap
-	replicas            []string
-	role, replicationId string
-	offset              int
+	database                  map[string]HashMap
+	replicas                  []string
+	role, replicationId, host string
+	offset                    int
 }
 
 func generateRepId() string {
@@ -202,7 +202,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 
 		server.replicas = append(server.replicas, uri[2])
 
-		fmt.Printf("Replica is %s", uri[2])
+		fmt.Printf("Replica is %s", server.host)
 		fmt.Printf("Replica field (SERVER) after setting: %s", server.replicas[0])
 	}
 
