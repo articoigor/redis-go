@@ -195,7 +195,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 }
 
 func processReplconf(conn net.Conn, req string, server Server) {
-	re := regexp.MustCompile(`listening-port\s+(\S+)`)
+	re := regexp.MustCompile(`listening-port\s+\S+\s+(\S+)`)
 
 	if re.MatchString(req) {
 		matches := re.FindStringSubmatch(req)
