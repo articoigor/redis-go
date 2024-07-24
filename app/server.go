@@ -155,6 +155,7 @@ func processRequest(data []string, req string, server Server) string {
 }
 
 func processInfoRequest(server Server) string {
+	fmt.Println("chegou aqui")
 	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 
 	return fmt.Sprintf("$%d\r\n%s", len(str), str)
