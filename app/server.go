@@ -62,6 +62,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 				conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 			}
 		} else {
+			fmt.Println("entrou aqui")
 			conn, err := listener.Accept()
 
 			if err != nil {
