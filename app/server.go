@@ -49,7 +49,7 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, replicaMaster string, port int) {
 	connCount := 0
 
-	fmt.Println("teste")
+	fmt.Println("teste 1")
 
 	for {
 		conn, err := listener.Accept()
@@ -59,7 +59,7 @@ func handleConnections(listener net.Listener, serverRole, replicaMaster string, 
 
 			continue
 		}
-		fmt.Println("teste")
+		fmt.Println("teste 2")
 
 		connCount++
 
