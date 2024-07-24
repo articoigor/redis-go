@@ -20,7 +20,7 @@ func main() {
 
 	var replicaMaster string
 
-	serverRole := "slave"
+	serverRole := "master"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
@@ -29,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	if replicaMaster != "" {
-		serverRole = "master"
+		serverRole = "slave"
 	}
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
@@ -51,7 +51,6 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 
 	for {
 		if len(masterUri) > 0 {
-			fmt.Println(0)
 			masterAddress := strings.Join(strings.Split(masterUri, " "), ":")
 
 			conn, err := net.Dial("tcp", masterAddress)
@@ -62,7 +61,6 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 
 		}
 
-		fmt.Println(0)
 		conn, err := listener.Accept()
 
 		if err != nil {
