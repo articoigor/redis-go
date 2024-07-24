@@ -16,15 +16,19 @@ import (
 const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 func main() {
-	var port int = 6379
+	var port int
 
-	var replicaMaster string = ""
+	var replicaof string
 
 	serverRole := "master"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
+	flag.StringVar(&replicaof, "replicaof", "master", "Role assigned to the current connection replica")
+
+	if replicaof == "master" {
+		serverRole = "slave"
+	}
 
 	flag.Parse()
 
@@ -39,7 +43,7 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, serverRole, replicaMaster, port)
+	handleConnections(l, serverRole, replicaof, port)
 }
 
 func handleConnections(listener net.Listener, serverRole, replicaMaster string, port int) {
