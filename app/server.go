@@ -110,7 +110,7 @@ func sendReplconf(conn net.Conn, port int) {
 	_, err := conn.Read(firstResponse)
 
 	if err == nil {
-		conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3"))
+		conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n"))
 	}
 }
 
