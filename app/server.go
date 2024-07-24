@@ -281,6 +281,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 
 	if server.role == "master" {
 		for _, replica := range server.replicas {
+			fmt.Println("**********")
 			fmt.Println(replica)
 		}
 
