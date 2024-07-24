@@ -195,7 +195,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
-
+		fmt.Println(len(uri))
 		server.replicas = append(server.replicas, uri[2])
 	}
 
