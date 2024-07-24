@@ -201,6 +201,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 		fmt.Println(uri[2])
 		server.subscriberPort = uri[2]
+		fmt.Println(server.subscriberPort)
 	}
 
 	conn.Write([]byte("+OK\r\n"))
