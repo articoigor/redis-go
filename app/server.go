@@ -157,8 +157,6 @@ func handleCommand(conn net.Conn, connID int, serverRole string) {
 
 		_, err := conn.Read(buf)
 
-		fmt.Println(string(buf))
-
 		if err != nil {
 			fmt.Println("Error reading from connection:", err.Error())
 			break
