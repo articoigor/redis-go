@@ -49,7 +49,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 
 		server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
 
-		if subscriberConn == nil {
+		if subscriberConn != nil {
 			server.role = "subscriber"
 
 			conn, err := listener.Accept()
