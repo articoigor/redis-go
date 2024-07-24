@@ -57,8 +57,6 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 
 		conn, err := listener.Accept()
 
-		fmt.Printf("replica port: %s", server.replicas[0])
-
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
