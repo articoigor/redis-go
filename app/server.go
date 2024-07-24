@@ -18,7 +18,7 @@ const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345
 func main() {
 	var port int
 
-	var replicaMaster string
+	var replicaMaster string = ""
 
 	serverRole := "master"
 
