@@ -152,6 +152,7 @@ func processInfoRequest(servers map[int]Server, port int, replicaMaster string) 
 	server := servers[port]
 
 	if server.role != "master" {
+		fmt.Println("ENTROU")
 		masterData := strings.Split(replicaMaster, " ")
 
 		masterHost, masterPort := masterData[0], masterData[1]
@@ -160,7 +161,7 @@ func processInfoRequest(servers map[int]Server, port int, replicaMaster string) 
 
 		_, err := servers[portNum]
 
-		if masterHost == "localhost" && err == false {
+		if masterHost == "localhost" && !err {
 			return "*1\r\n$4\r\nPING"
 		}
 	}
