@@ -268,13 +268,10 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	if server.role == "master" {
-		fmt.Printf("Server is in port %s and has %d replicas", server.host, len(server.replicas))
-		for _, replica := range server.replicas {
-			fmt.Println("**********")
-			fmt.Println(replica)
-			propagateToReplica(replica, key, hashValue.value)
-		}
+	for _, replica := range server.replicas {
+		fmt.Println("**********")
+		fmt.Println(replica)
+		propagateToReplica(replica, key, hashValue.value)
 	}
 }
 
