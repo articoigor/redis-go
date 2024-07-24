@@ -97,25 +97,25 @@ func sendReplconf(conn net.Conn, port int) {
 
 	conn.Write([]byte(confirmationStr))
 
-	conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n"))
+	firstRes := make([]byte, 128)
 
-	replconfRes := make([]byte, 128)
+	_, err := conn.Read(firstRes)
 
-	_, err := conn.Read(replconfRes)
+	isOk := err != nil && regexp.MustCompile("OK").MatchString(string(firstRes))
 
-	fmt.Println(string(replconfRes))
-
-	if err == nil {
-		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3\r\n"))
+	if isOk {
+		conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n"))
 	}
 
-	// firstResponse := make([]byte, 128)
+	secondRes := make([]byte, 128)
 
-	// _, err := conn.Read(firstResponse)
+	_, err = conn.Read(secondRes)
 
-	// if err == nil {
-	// 	conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n*3\r\n"))
-	// }
+	isOk = err != nil && regexp.MustCompile("OK").MatchString(string(secondRes))
+
+	if isOk {
+		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3\r\n"))
+	}
 }
 
 // func sendPsync(conn net.Conn) {
