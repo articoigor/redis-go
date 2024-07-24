@@ -199,6 +199,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening-port\s+\S`)
 
 	if re.MatchString(req) {
+		fmt.Println("deu match")
 		uri := re.FindStringSubmatch(req)
 
 		if len(uri) > 1 {
