@@ -90,7 +90,7 @@ func sendHandshake(masterUri string, port int) {
 		_, err = conn.Read(handshakeRes)
 
 		if err == nil {
-			sendReplconf(conn, master[1])
+			sendReplconf(conn, strconv.Itoa(port))
 		}
 	}
 }
