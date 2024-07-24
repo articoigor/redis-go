@@ -118,16 +118,6 @@ func sendReplconf(conn net.Conn, port int) {
 	if isOk {
 		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"))
 	}
-
-	thirdRes := make([]byte, 128)
-
-	_, err = conn.Read(thirdRes)
-
-	isOk = err == nil && regexp.MustCompile("OK").MatchString(string(thirdRes))
-
-	if isOk {
-		conn.Write([]byte(fmt.Sprintf(("$%d\r\n%s"), len(emptyFile), emptyFile)))
-	}
 }
 
 // func sendPsync(conn net.Conn) {
@@ -183,51 +173,56 @@ func handleCommand(conn net.Conn, connID int, serverRole string) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		returnMessage := processRequest(data, string(buf), server)
-
-		_, err = conn.Write([]byte(fmt.Sprintf("%s\r\n", returnMessage)))
-
-		if err != nil {
-			fmt.Println("Error writing to connection:", err.Error())
-		}
+		processRequest(data, string(buf), server, conn)
 	}
 }
 
-func processRequest(data []string, req string, server Server) string {
+func processRequest(data []string, req string, server Server, conn net.Conn) string {
 	endpoint := data[2]
 
 	hashMap := server.database
-
+	conn.Write([]byte(fmt.Sprintf(("$%d\r\n%s"), len(emptyFile), emptyFile)))
 	fmt.Println(endpoint)
 
 	switch endpoint {
 	case "ECHO":
-		return "+" + data[4]
+		conn.Write([]byte(fmt.Sprintf(("+%s"), data[4])))
 	case "PING":
-		return "+" + "PONG"
+		conn.Write([]byte("+PONG"))
 	case "GET":
-		return processGetRequest(data, hashMap)
+		processGetRequest(data, hashMap, conn)
 	case "INFO":
-		return processInfoRequest(server)
+		processInfoRequest(server, conn)
 	case "SET":
-		return processSetRequest(data, req, hashMap)
+		processSetRequest(data, req, hashMap, conn)
 	case "REPLCONF":
-		return "+OK"
+		conn.Write([]byte("+OK"))
 	case "PSYNC":
-		return fmt.Sprintf("+FULLRESYNC %s 0", server.replicationId)
+		processPsync(conn, server)
 	default:
 		return ""
 	}
 }
 
-func processInfoRequest(server Server) string {
-	fmt.Println("chegou aqui")
-	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
+func processPsync(conn net.Conn, server Server) {
+	message := fmt.Sprintf("+FULLRESYNC %s 0\r\n", server.replicationId)
 
-	return fmt.Sprintf("$%d\r\n%s", len(str), str)
+	conn.Write([]byte(fmt.Sprintf(("%s$%d\r\n%s"), message, len(emptyFile), emptyFile)))
 }
 
-func processGetRequest(data []string, hashMap map[string]HashMap) string {
+func processInfoRequest(server Server, conn net.Conn) {
+	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
+
+	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
+
+	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
+}
+
+func processGetRequest(data []string, hashMap map[string]HashMap, conn net.Conn) {
 	key := data[4]
 
 	mapObj := hashMap[key]
@@ -242,7 +237,11 @@ func processGetRequest(data []string, hashMap map[string]HashMap) string {
 		message = "$-1"
 	}
 
-	return message
+	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
 }
 
 func retrieveTimePassed(mapObj HashMap) int64 {
@@ -253,7 +252,7 @@ func retrieveTimePassed(mapObj HashMap) int64 {
 	return int64(math.Abs(milli - createdAt))
 }
 
-func processSetRequest(data []string, req string, hashMap map[string]HashMap) string {
+func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn) string {
 	now := time.Now()
 
 	expiryVal := 0
@@ -270,5 +269,9 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap) st
 
 	hashMap[key] = hashValue
 
-	return "+OK"
+	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", "+OK")))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
 }
