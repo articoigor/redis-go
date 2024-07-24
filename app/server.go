@@ -274,10 +274,10 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
 	}
-
+	fmt.Println(server.role)
+	address := conn.RemoteAddr().String()
+	fmt.Println(address)
 	if server.role == "master" {
-		address := conn.RemoteAddr().String()
-		fmt.Println(address)
 		propagatingConn, err := net.Dial("tcp", address)
 
 		if err != nil {
