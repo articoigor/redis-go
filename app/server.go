@@ -53,6 +53,8 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 			server.role = "subscriber"
 
 			server.replicas = append(server.replicas, strconv.Itoa(subscriberPort))
+
+			fmt.Printf("Handshake sent by %s subscriber", subscriberPort)
 		}
 
 		conn, err := listener.Accept()
