@@ -202,7 +202,7 @@ func processRequest(data []string, req string, server Server) string {
 	case "REPLCONF":
 		return "+OK"
 	case "PSYNC":
-		return fmt.Sprintln("+FULLRESYNC %s 0", server.replicationId)
+		return fmt.Sprintf("+FULLRESYNC %s 0", server.replicationId)
 	default:
 		return ""
 	}
