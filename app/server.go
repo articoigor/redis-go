@@ -93,7 +93,7 @@ func handleCommand(conn net.Conn, connID int, serverRole, replicaMaster string) 
 	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), offset: 0, host: "", port: 0}
 
 	pingCount := 0
-
+	fmt.Println(serverRole)
 	for {
 		pingCount++
 
