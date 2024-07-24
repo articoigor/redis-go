@@ -32,7 +32,7 @@ func main() {
 		serverRole = "slave"
 	}
 
-	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
+	l, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 
 	if err != nil {
 		fmt.Println("Failed to bind to port 6379")
