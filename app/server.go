@@ -57,7 +57,7 @@ func handleConnections(listener net.Listener, serverRole, replicaMaster string, 
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
-			continue
+			break
 		}
 		fmt.Println("teste 2")
 
@@ -77,7 +77,7 @@ type HashMap struct {
 type Server struct {
 	database                  map[string]HashMap
 	role, replicationId, host string
-	offset, port              int
+	offset                    int
 }
 
 func generateRepId() string {
