@@ -50,8 +50,6 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	connCount := 0
 
 	for {
-		sendHandshake(masterUri)
-
 		conn, err := listener.Accept()
 
 		if err != nil {
@@ -65,6 +63,8 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 		fmt.Printf("Connection %d establised !", connCount)
 
 		go handleCommand(conn, connCount, serverRole)
+
+		sendHandshake(masterUri)
 	}
 }
 
