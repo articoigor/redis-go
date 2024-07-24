@@ -51,6 +51,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 
 		if subscriberConn != nil {
 			server.role = "subscriber"
+
 			go handleCommand(subscriberConn, server)
 		} else {
 			conn, err := listener.Accept()
@@ -270,15 +271,12 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 	fmt.Println(server.role)
-	address := conn.RemoteAddr().String()
-	fmt.Println(address)
-	if server.role == "master" {
-		propagatingConn, err := net.Dial("tcp", address)
 
+	if server.role == "master" {
 		if err != nil {
 			message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
 
-			propagatingConn.Write([]byte(message))
+			conn.Write([]byte(message))
 		}
 	}
 }
