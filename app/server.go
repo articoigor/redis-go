@@ -49,6 +49,8 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, replicaMaster string, port int) {
 	connCount := 0
 
+	fmt.Println("teste")
+
 	for {
 		conn, err := listener.Accept()
 
