@@ -29,10 +29,6 @@ func main() {
 
 	flag.Parse()
 
-	if replicaMaster != "" {
-		serverRole = "slave"
-	}
-
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
@@ -275,7 +271,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 	fmt.Println(server.role)
-	address := conn.LocalAddr().String()
+	address := conn.RemoteAddr().String()
 	fmt.Println(address)
 	if server.role == "master" {
 		propagatingConn, err := net.Dial("tcp", address)
