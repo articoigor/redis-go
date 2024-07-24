@@ -101,9 +101,17 @@ func sendHandshake(masterUri string, port int) {
 func sendReplconf(conn net.Conn, port int) {
 	strPort := strconv.Itoa(port)
 
-	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", len(strPort), strPort)
+	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n*3", len(strPort), strPort)
 
 	conn.Write([]byte(confirmationStr))
+
+	firstResponse := make([]byte, 128)
+
+	_, err := conn.Read(firstResponse)
+
+	if err == nil {
+		conn.Write([]byte("$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
+	}
 }
 
 func sendPsync(conn net.Conn) {
