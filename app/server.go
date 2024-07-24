@@ -55,8 +55,6 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 
 			conn, err := net.Dial("tcp", masterAddress)
 
-			defer conn.Close()
-
 			if err == nil {
 				conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 			}
