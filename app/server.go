@@ -85,7 +85,7 @@ func sendHandshake(masterUri string) {
 }
 
 func sendReplconf(conn net.Conn, port string) {
-	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
+	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", len(port), port)
 
 	conn.Write([]byte(confirmationStr))
 }
