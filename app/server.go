@@ -188,12 +188,22 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "SET":
 		processSetRequest(data, req, hashMap, conn, server)
 	case "REPLCONF":
-		conn.Write([]byte("+OK\r\n"))
+		processReplconf(conn)
 	case "PSYNC":
 		processPsync(conn, server)
 	default:
 		fmt.Println("Invalid command informed")
 	}
+}
+
+func processReplconf(conn net.Conn) {
+	replica := make([]byte, 128)
+
+	conn.Read(replica)
+
+	fmt.Println(string(replica))
+
+	conn.Write([]byte("+OK\r\n"))
 }
 
 func processPsync(conn net.Conn, server Server) {
@@ -270,12 +280,16 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$3\r\nbar\r\n", len(hashValue.value), hashValue.value)
+		propagateToReplica(hashValue, conn)
+	}
+}
 
-		_, err = conn.Write([]byte(message))
+func propagateToReplica(hashValue HashMap, conn net.Conn) {
+	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$3\r\nbar\r\n", len(hashValue.value), hashValue.value)
 
-		if err != nil {
-			fmt.Println("Error writing to connection:", err.Error())
-		}
+	_, err := conn.Write([]byte(message))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
 	}
 }
