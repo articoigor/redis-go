@@ -202,7 +202,8 @@ func processReplconf(conn net.Conn, req string, server Server) {
 
 		server.replicas = append(server.replicas, uri[2])
 
-		fmt.Printf("replica after setting: %s", server.replicas[0])
+		fmt.Printf("Replica is %s", uri[2])
+		fmt.Printf("Replica field (SERVER) after setting: %s", server.replicas[0])
 	}
 
 	conn.Write([]byte("+OK\r\n"))
