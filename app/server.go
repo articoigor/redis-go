@@ -199,7 +199,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 
 	if re.MatchString(req) {
 		fmt.Println("deu match")
-		uri := strings.SplitAfter(re.FindString(req), " ")
+		uri := strings.Split(re.FindString(req), " ")
 		print(len(uri))
 		if len(uri) > 1 {
 			server.subscriberPort = uri[2]
