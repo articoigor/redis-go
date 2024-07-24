@@ -284,7 +284,7 @@ func propagateToReplica(subscriber, key, value string) {
 	}
 
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-	fmt.Println(message)
+	fmt.Println(fmt.Sprintf("localhost:%s", subscriber))
 	_, err = conn.Write([]byte(message))
 
 	if err != nil {
