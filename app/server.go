@@ -195,7 +195,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 }
 
 func processReplconf(conn net.Conn, req string, server Server) {
-	re := regexp.MustCompile(`listening\-port\s\$[1-9]{0,4}\s[0-9]{0,4}`)
+	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
 		fmt.Println("deu match")
