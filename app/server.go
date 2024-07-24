@@ -70,7 +70,9 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 
 func sendHandshake(masterUri string) {
 	if len(masterUri) > 0 {
-		masterAddress := strings.Join(strings.Split(masterUri, " "), ":")
+		master := strings.Split(masterUri, " ")
+
+		masterAddress := strings.Join(master, ":")
 
 		conn, err := net.Dial("tcp", masterAddress)
 
@@ -78,7 +80,14 @@ func sendHandshake(masterUri string) {
 			conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 		}
 
+		sendReplconf(conn, master[1])
 	}
+}
+
+func sendReplconf(conn net.Conn, port string) {
+	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
+
+	conn.Write([]byte(confirmationStr))
 }
 
 type HashMap struct {
