@@ -280,12 +280,12 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
+		fmt.Println("Server is in port %s", server.host)
 		for _, replica := range server.replicas {
 			fmt.Println("**********")
 			fmt.Println(replica)
+			propagateToReplica(replica, key, hashValue.value)
 		}
-
-		propagateToReplica(server.replicas[0], key, hashValue.value)
 	}
 }
 
