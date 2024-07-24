@@ -198,11 +198,9 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
-		fmt.Println("deu match")
 		uri := strings.Split(re.FindString(req), "\r\n")
-		fmt.Println(re.FindString(req))
-		server.subscriberPort = uri[1]
-		fmt.Println(server.subscriberPort)
+
+		server.subscriberPort = uri[2]
 	}
 
 	conn.Write([]byte("+OK\r\n"))
