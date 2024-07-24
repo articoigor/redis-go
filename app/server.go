@@ -200,6 +200,8 @@ func processReplconf(conn net.Conn, req string, server Server) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replica = uri[2]
+
+		fmt.Printf("replica after setting: %s", server.replica)
 	}
 
 	conn.Write([]byte("+OK\r\n"))
