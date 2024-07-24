@@ -284,14 +284,14 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println(*subscriberPort)
 		fmt.Println(server.replicationId)
 
-		propagateToReplica(subscriberPort, key, hashValue.value)
+		propagateToReplica(*subscriberPort, key, hashValue.value)
 	}
 }
 
-func propagateToReplica(subscriber *string, key, value string) {
-	fmt.Printf("Starting propagation of SET method on replica (port %s) !", *subscriber)
+func propagateToReplica(subscriber, key, value string) {
+	fmt.Printf("Starting propagation of SET method on replica (port %s) !", subscriber)
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", *subscriber))
+	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", subscriber))
 
 	if err != nil {
 		fmt.Println("Error dialing to subscriber:", err.Error())
