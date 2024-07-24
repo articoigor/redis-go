@@ -107,7 +107,7 @@ func sendReplconf(conn net.Conn, port int) {
 }
 
 func sendPsync(conn net.Conn) {
-	confirmationStr := fmt.Sprintf("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n")
+	confirmationStr := "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
 
 	conn.Write([]byte(confirmationStr))
 }
@@ -185,8 +185,6 @@ func processRequest(data []string, req string, server Server) string {
 		return processInfoRequest(server)
 	case "SET":
 		return processSetRequest(data, req, hashMap)
-	case "REPLCONF":
-		return "+OK"
 	default:
 		return ""
 	}
