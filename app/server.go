@@ -268,10 +268,14 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	for _, replica := range server.replicas {
-		fmt.Println("**********")
-		fmt.Println(replica)
-		propagateToReplica(replica, key, hashValue.value)
+	if server.role == "master" {
+		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
+
+		_, err = conn.Write([]byte(message))
+
+		if err != nil {
+			fmt.Println("Error writing to connection:", err.Error())
+		}
 	}
 }
 
