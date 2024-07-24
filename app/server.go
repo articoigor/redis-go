@@ -204,6 +204,7 @@ func processReplconf(conn net.Conn, req string, subscriberPort *string) {
 		*subscriberPort = uri[2]
 	}
 
+	fmt.Printf("Subs port: %s", *subscriberPort)
 	conn.Write([]byte("+OK\r\n"))
 }
 
