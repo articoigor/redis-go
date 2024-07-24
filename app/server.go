@@ -125,9 +125,9 @@ type HashMap struct {
 }
 
 type Server struct {
-	database                            map[string]HashMap
-	role, replicationId, subscriberPort string
-	offset                              int
+	database                        map[string]HashMap
+	role, replicationId, subscriber string
+	offset                          int
 }
 
 func generateRepId() string {
@@ -144,7 +144,7 @@ func generateRepId() string {
 func handleCommand(conn net.Conn, connID int, serverRole string) {
 	defer conn.Close()
 
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), subscriberPort: "", offset: 0}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), subscriber: "", offset: 0}
 
 	pingCount := 0
 
@@ -200,7 +200,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		server.subscriberPort = uri[2]
+		server.subscriber = uri[2]
 	}
 
 	conn.Write([]byte("+OK\r\n"))
@@ -280,16 +280,17 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
+		fmt.Println(server.subscriber)
 		fmt.Println(server.replicationId)
-		fmt.Println(server.subscriberPort)
+
 		propagateToReplica(hashValue, server)
 	}
 }
 
 func propagateToReplica(hashValue HashMap, server Server) {
-	fmt.Printf("Starting propagation of SET method on replica (port %s) !", server.subscriberPort)
+	fmt.Printf("Starting propagation of SET method on replica (port %s) !", server.subscriber)
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", server.subscriberPort))
+	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", server.subscriber))
 
 	if err != nil {
 		fmt.Println("Error dialing to subscriber:", err.Error())
