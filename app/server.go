@@ -24,14 +24,14 @@ func main() {
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
+	// flag.StringVar(&replicaMaster, "replicaof", "master", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
-	l, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
-		fmt.Println("Failed to bind to port 6379")
+		fmt.Printf("Failed to bind to port %d", port)
 		os.Exit(1)
 	} else {
 		fmt.Printf("Listening on port %d !", port)
