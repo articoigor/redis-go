@@ -195,11 +195,8 @@ func processReplconf(conn net.Conn, req string, server Server) {
 
 	if re.MatchString(req) {
 		fmt.Printf("Server is in port %s and has %d replicas", server.host, len(server.replicas))
-		uri := strings.Split(re.FindString(req), "\r\n")
+		// uri := strings.Split(re.FindString(req), "\r\n")
 
-		server.replicas = append(server.replicas, uri[2])
-
-		fmt.Printf("Replica field (SERVER) after setting: %s", server.replicas[0])
 	}
 
 	conn.Write([]byte("+OK\r\n"))
@@ -279,12 +276,14 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
+		address := conn.RemoteAddr().String()
 
-		_, err = conn.Write([]byte(message))
+		propagatingConn, err := net.Dial("tcp", address)
 
 		if err != nil {
-			fmt.Println("Error writing to connection:", err.Error())
+			message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
+
+			propagatingConn.Write([]byte(message))
 		}
 	}
 }
