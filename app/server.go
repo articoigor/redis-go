@@ -198,11 +198,9 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) && server.role == "master" {
-		uri := strings.Split(re.FindString(req), "\r\n")
+		server.replicas = append(server.replicas, server.host)
 
-		server.replicas = append(server.replicas, uri[2])
-
-		fmt.Printf("Replica is %s", server.host)
+		fmt.Printf("Replica is %s and role is %s", server.host, server.role)
 		fmt.Printf("Replica field (SERVER) after setting: %s", server.replicas[0])
 	}
 
