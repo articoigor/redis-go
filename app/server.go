@@ -297,7 +297,7 @@ func propagateToReplica(hashValue HashMap, subscriber *string) {
 		fmt.Println("Error dialing to subscriber:", err.Error())
 	}
 
-	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$3\r\nbar\r\n", len(hashValue.value), hashValue.value)
+	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(hashValue.value), hashValue.value)
 
 	_, err = conn.Write([]byte(message))
 
