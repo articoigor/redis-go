@@ -277,7 +277,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 
 	if server.role == "master" {
 		address := conn.RemoteAddr().String()
-
+		fmt.Println(address)
 		propagatingConn, err := net.Dial("tcp", address)
 
 		if err != nil {
