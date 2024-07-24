@@ -199,7 +199,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
-
+		fmt.Println(uri[2])
 		server.subscriberPort = uri[2]
 	}
 
