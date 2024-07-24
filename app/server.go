@@ -183,7 +183,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
-	if re.MatchString(req) && server.role == "master" {
+	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replicas = append(server.replicas, uri[2])
