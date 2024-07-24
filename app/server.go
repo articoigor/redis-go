@@ -195,7 +195,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 }
 
 func processReplconf(conn net.Conn) {
-	replica := make([]byte, 128)
+	replica := make([]byte, 256)
 
 	conn.Read(replica)
 
