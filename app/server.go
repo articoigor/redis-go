@@ -50,6 +50,8 @@ func main() {
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	connCount := 0
 
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
+
 	for {
 		sendHandshake(masterUri, port)
 
@@ -65,7 +67,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 
 		fmt.Printf("Connection %d establised !", connCount)
 
-		go handleCommand(conn, connCount, serverRole)
+		go handleCommand(conn, connCount, server)
 	}
 }
 
@@ -141,10 +143,8 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func handleCommand(conn net.Conn, connID int, serverRole string) {
+func handleCommand(conn net.Conn, connID int, server Server) {
 	defer conn.Close()
-
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
 	pingCount := 0
 
