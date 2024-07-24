@@ -26,11 +26,11 @@ func main() {
 
 	flag.StringVar(&replicaof, "replicaof", "master", "Role assigned to the current connection replica")
 
+	flag.Parse()
+
 	if replicaof == "master" {
 		serverRole = "slave"
 	}
-
-	flag.Parse()
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
