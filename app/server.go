@@ -49,23 +49,27 @@ func main() {
 
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	for {
-		sendHandshake(masterUri, port)
-
-		conn, err := listener.Accept()
+		subscriberConn := sendHandshake(masterUri, port)
 
 		server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
 
-		if err != nil {
-			fmt.Println("Error accepting connection:", err.Error())
+		if subscriberConn == nil {
+			conn, err := listener.Accept()
 
-			continue
+			if err != nil {
+				fmt.Println("Error accepting connection:", err.Error())
+
+				continue
+			}
+
+			go handleCommand(conn, server)
+		} else {
+			go handleCommand(subscriberConn, server)
 		}
-
-		go handleCommand(conn, server)
 	}
 }
 
-func sendHandshake(masterUri string, port int) {
+func sendHandshake(masterUri string, port int) net.Conn {
 	if len(masterUri) > 0 {
 		master := strings.Split(masterUri, " ")
 
@@ -84,7 +88,11 @@ func sendHandshake(masterUri string, port int) {
 		if err == nil {
 			sendReplconf(conn, strconv.Itoa(port))
 		}
+
+		return conn
 	}
+
+	return nil
 }
 
 func sendReplconf(conn net.Conn, port string) {
@@ -279,20 +287,20 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 }
 
-func propagateToReplica(subscriber, key, value string) {
-	fmt.Printf("Starting propagation of SET method on replica (port %s) !", subscriber)
+// func propagateToReplica(subscriber, key, value string) {
+// 	fmt.Printf("Starting propagation of SET method on replica (port %s) !", subscriber)
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", subscriber))
+// 	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", subscriber))
 
-	if err != nil {
-		fmt.Println("Error dialing to subscriber:", err.Error())
-	}
+// 	if err != nil {
+// 		fmt.Println("Error dialing to subscriber:", err.Error())
+// 	}
 
-	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+// 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
 
-	_, err = conn.Write([]byte(message))
+// 	_, err = conn.Write([]byte(message))
 
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
-	}
-}
+// 	if err != nil {
+// 		fmt.Println("Error writing to connection:", err.Error())
+// 	}
+// }
