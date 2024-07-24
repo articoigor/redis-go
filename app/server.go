@@ -28,6 +28,8 @@ func main() {
 
 	flag.Parse()
 
+	fmt.Println(replicaMaster)
+
 	if replicaMaster != "master" {
 		serverRole = "slave"
 	}
