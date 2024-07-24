@@ -181,7 +181,6 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	endpoint := data[2]
 
 	hashMap := server.database
-	conn.Write([]byte(fmt.Sprintf(("$%d\r\n%s"), len(emptyFile), emptyFile)))
 	fmt.Println(endpoint)
 
 	switch endpoint {
