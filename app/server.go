@@ -114,7 +114,7 @@ func sendReplconf(conn net.Conn, port int) {
 	isOk = err == nil && regexp.MustCompile("OK").MatchString(string(secondRes))
 
 	if isOk {
-		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n*3\r\n"))
+		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"))
 	}
 }
 
