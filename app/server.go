@@ -85,6 +85,8 @@ func sendHandshake(masterUri string, port int) int {
 
 		if err == nil {
 			sendReplconf(conn, strconv.Itoa(port))
+		} else {
+			conn.Close()
 		}
 
 		return port
@@ -285,7 +287,7 @@ func propagateToReplica(server Server, key, value string) {
 		}
 
 		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-		fmt.Sprintf("0.0.0.0:%s", subscriber)
+		fmt.Printf("0.0.0.0:%s", subscriber)
 		_, err = conn.Write([]byte(message))
 
 		if err != nil {
