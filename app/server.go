@@ -39,6 +39,8 @@ func main() {
 	if err != nil {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
+	} else {
+		fmt.Println("Listening on port %d !", port)
 	}
 
 	defer l.Close()
