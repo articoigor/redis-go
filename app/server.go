@@ -281,7 +281,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		fmt.Println(&subscriberPort)
+		fmt.Println(*subscriberPort)
 		fmt.Println(server.replicationId)
 
 		propagateToReplica(hashValue, server)
