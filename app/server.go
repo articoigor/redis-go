@@ -28,10 +28,6 @@ func main() {
 
 	flag.Parse()
 
-	if replicaMaster != "master" {
-		serverRole = "slave"
-	}
-
 	l, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 
 	if err != nil {
@@ -51,7 +47,7 @@ func handleConnections(listener net.Listener, serverRole, replicaMaster string, 
 
 	for {
 		conn, err := listener.Accept()
-		fmt.Println(conn.LocalAddr().String())
+
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
