@@ -273,6 +273,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
+	fmt.Println(server.role)
 	if server.role == "master" {
 		propagateToReplica(server, key, hashValue.value)
 	}
