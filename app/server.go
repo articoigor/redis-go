@@ -101,6 +101,8 @@ func sendReplconf(conn net.Conn, port int) {
 
 	_, err := conn.Read(firstRes)
 
+	fmt.Println(string(firstRes))
+
 	isOk := err != nil && regexp.MustCompile("OK").MatchString(string(firstRes))
 
 	if isOk {
