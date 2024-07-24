@@ -52,7 +52,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	for {
 
 		master := strings.Split(masterUri, " ")
-		fmt.Println(master)
+
 		if serverRole != "master" && len(master) > 1 {
 			masterAddress := strings.Join(master, ":")
 
