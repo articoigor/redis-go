@@ -185,7 +185,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn, sub
 	case "INFO":
 		processInfoRequest(server, conn)
 	case "SET":
-		processSetRequest(data, req, hashMap, conn, server, subscriberPort)
+		processSetRequest(data, req, hashMap, conn, server, &subscriberPort)
 	case "REPLCONF":
 		processReplconf(conn, req, &subscriberPort)
 	case "PSYNC":
@@ -257,7 +257,7 @@ func retrieveTimePassed(mapObj HashMap) int64 {
 	return int64(math.Abs(milli - createdAt))
 }
 
-func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn, server Server, subscriberPort string) {
+func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn, server Server, subscriberPort *string) {
 	now := time.Now()
 
 	expiryVal := 0
@@ -281,7 +281,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		fmt.Println(subscriberPort)
+		fmt.Println(&subscriberPort)
 		fmt.Println(server.replicationId)
 
 		propagateToReplica(hashValue, server)
