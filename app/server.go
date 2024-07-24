@@ -50,16 +50,7 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 	connCount := 0
 
 	for {
-		if len(masterUri) > 0 {
-			masterAddress := strings.Join(strings.Split(masterUri, " "), ":")
-
-			conn, err := net.Dial("tcp", masterAddress)
-
-			if err == nil {
-				conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-			}
-
-		}
+		sendHandshake(masterUri)
 
 		conn, err := listener.Accept()
 
@@ -74,6 +65,19 @@ func handleConnections(listener net.Listener, serverRole, masterUri string) {
 		fmt.Printf("Connection %d establised !", connCount)
 
 		go handleCommand(conn, connCount, serverRole)
+	}
+}
+
+func sendHandshake(masterUri string) {
+	if len(masterUri) > 0 {
+		masterAddress := strings.Join(strings.Split(masterUri, " "), ":")
+
+		conn, err := net.Dial("tcp", masterAddress)
+
+		if err == nil {
+			conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		}
+
 	}
 }
 
