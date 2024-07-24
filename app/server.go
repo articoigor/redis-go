@@ -185,9 +185,9 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 
 	switch endpoint {
 	case "ECHO":
-		conn.Write([]byte(fmt.Sprintf(("+%s"), data[4])))
+		conn.Write([]byte(fmt.Sprintf(("+%s\r\n"), data[4])))
 	case "PING":
-		conn.Write([]byte("+PONG"))
+		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
 		processGetRequest(data, hashMap, conn)
 	case "INFO":
@@ -195,7 +195,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "SET":
 		processSetRequest(data, req, hashMap, conn)
 	case "REPLCONF":
-		conn.Write([]byte("+OK"))
+		conn.Write([]byte("+OK\r\n"))
 	case "PSYNC":
 		processPsync(conn, server)
 	default:
