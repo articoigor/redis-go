@@ -71,23 +71,7 @@ func main() {
 		fmt.Printf("Listening on port %d", port)
 	}
 
-	handleConnections(l, &client)
-}
-
-func handleConnections(listener net.Listener, client *ServerClient) {
-	for {
-		conn, err := listener.Accept()
-
-		if err != nil {
-			fmt.Println("Error accepting connection:", err.Error())
-
-			continue
-		}
-
-		client.conn = conn
-
-		go handleCommand(conn, client)
-	}
+	client.handleConnections(l)
 }
 
 func sendHandshake(masterAddress string, port int) {
@@ -107,6 +91,24 @@ func sendHandshake(masterAddress string, port int) {
 
 	if err == nil {
 		sendReplconf(handshakeConn, strconv.Itoa(port))
+	}
+}
+
+func (sv *ServerClient) handleConnections(listener net.Listener) {
+	for {
+		conn, err := listener.Accept()
+
+		if err != nil {
+			fmt.Println("Error accepting connection:", err.Error())
+
+			continue
+		}
+
+		sv.conn = conn
+
+		message := sv.handleCommand()
+
+		sv.conn.Write([]byte(message))
 	}
 }
 
@@ -136,150 +138,100 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func handleCommand(conn net.Conn, server *ServerClient) {
+func (sv *ServerClient) handleCommand() string {
 	for {
-		buf := make([]byte, 1024)
+		rawData := make([]byte, 1024)
 
-		_, err := conn.Read(buf)
+		_, err := sv.conn.Read(rawData)
 
 		if err != nil {
 			fmt.Println("Error reading from connection:", err.Error())
-			break
+
+			continue
 		}
 
-		data := strings.Split(string(buf), "\r\n")
+		data := sv.processData(string(rawData))
 
-		server.processRequest(data, string(buf), conn)
+		return sv.processRequest(data, string(rawData))
 	}
 }
 
-func (sv *ServerClient) processRequest(data []string, req string, conn net.Conn) {
-	endpoint := data[2]
+func (sv *ServerClient) processRequest(data []string, rawRequest string) string {
+	command := data[0]
 
-	fmt.Printf("\r\nProcessing %s command\r\n", endpoint)
+	fmt.Printf("\r\nProcessing %s command\r\n", data[0])
 
-	switch endpoint {
+	switch command {
 	case "ECHO":
-		conn.Write([]byte(fmt.Sprintf(("+%s\r\n"), data[4])))
+		return fmt.Sprintf(("+%s\r\n"), data[1])
 	case "PING":
-		conn.Write([]byte("+PONG\r\n"))
+		return "+PONG\r\n"
 	case "GET":
-		sv.processGetRequest(data)
+		return sv.processGetRequest(data)
 	case "SET":
-		sv.processSetRequest(data, req)
+		for _, replica := range sv.replicas {
+			propagateToReplica(replica, rawRequest)
+		}
+		return sv.processSetRequest(data)
 	case "INFO":
-		sv.processInfoRequest()
+		return sv.processInfoRequest()
 	case "REPLCONF":
-		sv.processReplconf(req)
+		return "+OK\r\n"
 	case "PSYNC":
 		sv.replicas = append(sv.replicas, sv.conn)
 
-		sv.processPsync()
+		return sv.processPsync()
 	default:
-		fmt.Println("Invalid command informed")
+		return "Invalid command informed !"
 	}
 }
 
-func (sv *ServerClient) processGetRequest(data []string) {
-	hashMap := sv.database
+func (sv *ServerClient) processGetRequest(data []string) string {
+	key := data[1]
 
-	key := data[4]
+	hash := sv.database[key]
 
-	mapObj := hashMap[key]
+	timeSpan := retrieveTimePassed(hash)
 
-	timeSpan := retrieveTimePassed(mapObj)
+	message := "+" + hash.value
 
-	message := "+" + mapObj.value
-
-	if mapObj.expiry > 0 && timeSpan > mapObj.expiry {
-		delete(hashMap, key)
+	if hash.expiry > 0 && timeSpan > hash.expiry {
+		delete(sv.database, key)
 
 		message = "$-1"
 	}
 
-	_, err := sv.conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
-
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
-	}
+	return fmt.Sprintf("%s\r\n", message)
 }
 
-func (sv *ServerClient) processSetRequest(data []string, req string) {
-	hashMap := sv.database
+func (sv *ServerClient) processSetRequest(data []string) string {
+	key, value := data[1], data[2]
 
 	now := time.Now()
 
-	expiryVal := 0
+	var expiryVal int64 = 0
 
-	regex, _ := regexp.Compile("px")
-
-	if regex.MatchString(req) {
-		expiryVal, _ = strconv.Atoi(data[10])
+	if len(data) > 3 {
+		expiryVal, _ = strconv.ParseInt(data[4], 10, 64)
 	}
 
-	hashValue := HashMap{value: data[6], createdAt: now.UnixMilli(), expiry: int64(expiryVal)}
+	hashValue := HashMap{value: value, createdAt: now.UnixMilli(), expiry: expiryVal}
 
-	key := data[4]
+	sv.database[key] = hashValue
 
-	hashMap[key] = hashValue
-
-	_, err := sv.conn.Write([]byte(fmt.Sprintf("%s\r\n", "+OK")))
-
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
-	}
-
-	if sv.role == "master" {
-		conn := 1
-		for _, replicaConn := range sv.replicas {
-			fmt.Printf("Processing the %d replica command propagation", conn)
-
-			repMessage := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
-
-			fmt.Println(repMessage)
-			_, err := replicaConn.Write([]byte(fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)))
-
-			if err != nil {
-				fmt.Println("Error writing to replica: ", err)
-			}
-
-			conn++
-		}
-	}
+	return fmt.Sprintf("%s\r\n", "+OK")
 }
 
-func (sv *ServerClient) processInfoRequest() {
+func (sv *ServerClient) processInfoRequest() string {
 	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", sv.role, sv.replicationId, sv.offset)
 
 	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
 
-	_, err := sv.conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
-
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
-	}
+	return fmt.Sprintf("%s\r\n", message)
 }
 
-func (sv *ServerClient) processReplconf(req string) string {
-	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
-
-	if re.MatchString(req) {
-		uri := strings.Split(re.FindString(req), "\r\n")
-
-		sv.conn.Write([]byte("+OK\r\n"))
-
-		return uri[2]
-	}
-
-	sv.conn.Write([]byte("+OK\r\n"))
-
-	return ""
-}
-
-func (sv *ServerClient) processPsync() {
+func (sv *ServerClient) processPsync() string {
 	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
 
-	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), sv.replicationId, len(emptyRDB), emptyRDB)
-
-	sv.conn.Write([]byte(message))
+	return fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), sv.replicationId, len(emptyRDB), emptyRDB)
 }

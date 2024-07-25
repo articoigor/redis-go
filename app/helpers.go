@@ -5,8 +5,23 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"strings"
 	"time"
 )
+
+func (sv *ServerClient) processData(req string) []string {
+	splitData := strings.Split(req, "\r\n")[1:]
+
+	request := make([]string, 3)
+
+	for _, line := range splitData {
+		if !strings.Contains(line, "%") && !strings.Contains(line, "*") {
+			request = append(request, line)
+		}
+	}
+
+	return request
+}
 
 func generateRepId() string {
 	byteArray := make([]byte, 40)
@@ -19,19 +34,11 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func propagateToReplica(replicaHost *string, key, value string) {
-	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+func propagateToReplica(replica net.Conn, command string) {
+	_, err := replica.Write([]byte(command))
 
 	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
-	}
-
-	_, err = dialConn.Write([]byte(message))
-
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
+		fmt.Printf("Error propagating command to replica %s", replica.LocalAddr())
 	}
 }
 
