@@ -145,7 +145,7 @@ func handleCommand(conn net.Conn, server *Server) {
 func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn) {
 	endpoint := data[2]
 
-	fmt.Printf("\r\nProcessing %s command", endpoint)
+	fmt.Printf("\r\nProcessing %s command\r\n", endpoint)
 
 	switch endpoint {
 	case "ECHO":
