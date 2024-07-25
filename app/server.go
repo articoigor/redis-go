@@ -219,7 +219,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 	if server.role == "master" {
 		fmt.Printf("\r\nStarted propagating SET command to %s\r\n", server.replica)
-		go propagateToReplica(server, key, hashValue.value)
+		go propagateToReplica(conn, server, key, hashValue.value)
 	}
 }
 

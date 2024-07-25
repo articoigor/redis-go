@@ -19,24 +19,14 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func propagateToReplica(server Server, key, value string) {
-	replicaConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", server.replica))
+func propagateToReplica(conn net.Conn, server Server, key, value string) {
+	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+
+	_, err := conn.Write([]byte(message))
 
 	if err != nil {
-		fmt.Println("Error dialing to subscriber:", err.Error())
-
-		return
-	} else {
-		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-
-		_, err = replicaConn.Write([]byte(message))
-
-		if err != nil {
-			fmt.Println("Error writing to connection:", err.Error())
-		}
+		fmt.Println("Error writing to connection:", err.Error())
 	}
-
-	replicaConn.Close()
 }
 
 func retrieveTimePassed(mapObj HashMap) int64 {
