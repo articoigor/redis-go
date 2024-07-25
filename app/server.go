@@ -223,6 +223,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
+		fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
 		go propagateToReplica(replicaHost, key, hashValue.value)
 	}
 }
