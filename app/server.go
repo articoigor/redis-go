@@ -186,10 +186,13 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
-		fmt.Println("entrou aqui")
+		fmt.Println("MASTER AFTER REPLYING THE FIRST REPLCONF: \r\n")
 		uri := strings.Split(re.FindString(req), "\r\n")
-		fmt.Println(len(uri))
+
 		server.replicas = append(server.replicas, uri[2])
+		fmt.Println(server.role)
+		fmt.Println(server.host)
+		fmt.Printf("replicas: %d", len(server.replicas))
 	}
 
 	conn.Write([]byte("+OK\r\n"))
