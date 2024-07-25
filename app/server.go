@@ -58,8 +58,6 @@ type Server struct {
 }
 
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
-	count := 1
-
 	for {
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
@@ -72,8 +70,6 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 		}
 
 		go handleCommand(listener, &server)
-
-		count++
 	}
 }
 
