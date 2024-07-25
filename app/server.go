@@ -90,6 +90,8 @@ func sendHandshake(masterUri string, port int) {
 
 	if err == nil {
 		fmt.Println("Handshake connection ended successfully !")
+	} else {
+		fmt.Println(err)
 	}
 }
 
