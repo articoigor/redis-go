@@ -21,7 +21,7 @@ func (sv *ServerClient) processData(req string) []string {
 		}
 	}
 
-	return request
+	return request[1:]
 }
 
 func generateRepId() string {
