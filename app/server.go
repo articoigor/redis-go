@@ -28,11 +28,11 @@ func main() {
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
+	flag.StringVar(&masterAddress, "replicaof", "master", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
-	if masterAddress != "" {
+	if masterAddress != "master" {
 		serverRole = "subscriber"
 	}
 
