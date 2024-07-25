@@ -219,7 +219,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	if server.role == "master" && server.replica != "" {
+	if server.role == "master" {
 		processInfoRequest(server, conn)
 		fmt.Printf("\r\nStarted propagating SET command to %s\r\n", server.replica)
 		go propagateToReplica(conn, server, key, hashValue.value)
