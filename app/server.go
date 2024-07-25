@@ -71,8 +71,6 @@ func main() {
 		fmt.Printf("Listening on port %d", port)
 	}
 
-	defer l.Close()
-
 	handleConnections(l, &client)
 }
 
@@ -102,8 +100,6 @@ func sendHandshake(masterAddress string, port int) {
 	if err == nil {
 		handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 	}
-
-	defer handshakeConn.Close()
 
 	handshakeRes := make([]byte, 256)
 
