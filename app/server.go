@@ -173,6 +173,9 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 
 		processReplconf(conn, req, replicaHost)
 	case "PSYNC":
+		server := *serverAdrs
+
+		fmt.Println(server.replicas)
 		processPsync(conn, serverAdrs)
 	default:
 		fmt.Println("Invalid command informed")
