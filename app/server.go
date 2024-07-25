@@ -22,7 +22,7 @@ type HashMap struct {
 func main() {
 	var port int
 	var replicaMaster string
-	host := "0.0.0.0"
+	host := "0.0.0.1"
 
 	serverRole := "master"
 
