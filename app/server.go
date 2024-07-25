@@ -48,7 +48,7 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, masterAddress, port)
+	go handleConnections(l, masterAddress, port)
 }
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
