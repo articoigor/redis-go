@@ -31,7 +31,7 @@ func main() {
 	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
 
 	flag.Parse()
-	fmt.Println(masterAddress)
+	fmt.Println("AAAAA" + masterAddress)
 	if masterAddress != "" {
 		serverRole = "subscriber"
 	}
