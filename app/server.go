@@ -158,9 +158,6 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "INFO":
 		processInfoRequest(*serverAdrs, conn)
 	case "REPLCONF":
-		server := *serverAdrs
-
-		server.replica = "teste"
 		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
 		processPsync(conn, *serverAdrs)
@@ -195,6 +192,9 @@ func processGetRequest(data []string, conn net.Conn, server Server) {
 func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server) {
 	server := *serverAdrs
 
+	fmt.Printf("Processing SET command\r\n")
+	fmt.Printf("Role: %s\r\n", server.role)
+	fmt.Printf("Replica: %s\r\n", server.replica)
 	hashMap := server.database
 
 	now := time.Now()
@@ -220,22 +220,22 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		processInfoRequest(server, conn)
+
 		fmt.Printf("\r\nStarted propagating SET command to %s\r\n", server.replica)
-		go propagateToReplica(conn, server, key, hashValue.value)
+		// go propagateToReplica(conn, server, key, hashValue.value)
 	}
 }
 
 func processInfoRequest(server Server, conn net.Conn) {
-	fmt.Printf("\r\nreplica:\r\nrole:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
+	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 
-	// message := fmt.Sprintf("$%d\r\n%s", len(str), str)
+	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
 
-	// // _, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
+	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
 
-	// if err != nil {
-	// 	fmt.Println("Error writing to connection:", err.Error())
-	// }
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
 }
 
 func processReplconf(conn net.Conn, req string, serverAdrs *Server) {
