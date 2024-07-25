@@ -239,7 +239,9 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 	if server.role == "master" {
 		for _, replicaConn := range server.replicas {
-			_, err := replicaConn.Write([]byte(req))
+			repMessage := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
+
+			_, err := replicaConn.Write([]byte(repMessage))
 
 			if err != nil {
 				fmt.Println("Error writing to replica: ", err)
