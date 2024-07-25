@@ -69,7 +69,7 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 			server.role = "subscriber"
 		}
 
-		handleCommand(conn, &server)
+		handleCommand(conn, server)
 	}
 }
 
@@ -121,7 +121,7 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func handleCommand(conn net.Conn, serverAdr *Server) {
+func handleCommand(conn net.Conn, server Server) {
 	for {
 		buf := make([]byte, 1024)
 
@@ -134,11 +134,11 @@ func handleCommand(conn net.Conn, serverAdr *Server) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		processRequest(data, string(buf), serverAdr, conn)
+		processRequest(data, string(buf), server, conn)
 	}
 }
 
-func processRequest(data []string, req string, server *Server, conn net.Conn) {
+func processRequest(data []string, req string, server Server, conn net.Conn) {
 	endpoint := data[2]
 
 	switch endpoint {
@@ -149,13 +149,13 @@ func processRequest(data []string, req string, server *Server, conn net.Conn) {
 	case "GET":
 		processGetRequest(data, server.database, conn)
 	case "SET":
-		processSetRequest(data, req, server.database, conn, *server)
+		processSetRequest(data, req, server.database, conn, server)
 	case "INFO":
-		processInfoRequest(*server, conn)
+		processInfoRequest(server, conn)
 	case "REPLCONF":
 		processReplconf(conn, req, server)
 	case "PSYNC":
-		processPsync(conn, *server)
+		processPsync(conn, server)
 	default:
 		fmt.Println("Invalid command informed")
 	}
@@ -224,13 +224,11 @@ func processInfoRequest(server Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn, req string, serverAdr *Server) {
+func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
-
-		server := *serverAdr
 
 		server.replica = uri[2]
 	}
