@@ -220,21 +220,22 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" && server.replica != "" {
+		processInfoRequest(server, conn)
 		fmt.Printf("\r\nStarted propagating SET command to %s\r\n", server.replica)
 		go propagateToReplica(conn, server, key, hashValue.value)
 	}
 }
 
 func processInfoRequest(server Server, conn net.Conn) {
-	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
+	fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 
-	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
+	// message := fmt.Sprintf("$%d\r\n%s", len(str), str)
 
-	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
+	// // _, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
 
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
-	}
+	// if err != nil {
+	// 	fmt.Println("Error writing to connection:", err.Error())
+	// }
 }
 
 func processReplconf(conn net.Conn, req string, serverAdrs *Server) {
