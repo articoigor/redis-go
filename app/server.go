@@ -48,11 +48,11 @@ func main() {
 func handleConnections(listener net.Listener, masterUri string, port int, serverAdr *Server) {
 	for {
 		if len(masterUri) > 0 {
+			sendHandshake(masterUri, port)
+
 			server := *serverAdr
 
 			server.role = "subscriber"
-
-			sendHandshake(listener, masterUri, port, serverAdr)
 		}
 
 		conn, err := listener.Accept()
@@ -67,7 +67,7 @@ func handleConnections(listener net.Listener, masterUri string, port int, server
 	}
 }
 
-func sendHandshake(listener net.Listener, masterUri string, port int, serverAdr *Server) {
+func sendHandshake(masterUri string, port int) {
 	master := strings.Split(masterUri, " ")
 
 	masterAddress := strings.Join(master, ":")
@@ -86,13 +86,7 @@ func sendHandshake(listener net.Listener, masterUri string, port int, serverAdr 
 		sendReplconf(conn, strconv.Itoa(port))
 	}
 
-	subscriptionBytes := make([]byte, 128)
-
-	_, err = conn.Read(subscriptionBytes)
-
-	if err == nil {
-		handleConnections(listener, "", port, serverAdr)
-	}
+	conn.Close()
 }
 
 func sendReplconf(conn net.Conn, port string) {
