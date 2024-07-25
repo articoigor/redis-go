@@ -288,6 +288,8 @@ func propagateToReplica(server Server, key, value string) {
 
 	if err != nil {
 		fmt.Println("Error dialing to subscriber:", err.Error())
+
+		return
 	}
 
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
