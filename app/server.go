@@ -54,7 +54,7 @@ func main() {
 func handleConnections(listener net.Listener, masterAddress string, port int) {
 	for {
 		server := Server{role: "master", host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
-		fmt.Println(masterAddress)
+		fmt.Println("********")
 		conn, err := listener.Accept()
 		fmt.Println(masterAddress)
 		if len(masterAddress) > 0 {
