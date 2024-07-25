@@ -19,6 +19,19 @@ type HashMap struct {
 	value             string
 }
 
+type Address struct {
+	host string
+	port int
+}
+
+type ServerClient struct {
+	address             Address
+	database            map[string]HashMap
+	replicas            []net.Conn
+	role, replicationId string
+	offset              int
+}
+
 func main() {
 	var port int
 
@@ -36,6 +49,15 @@ func main() {
 		sendHandshake(replicaMaster, port)
 	}
 
+	client := ServerClient{
+		address:       Address{host: "0.0.0.0", port: port},
+		role:          serverRole,
+		database:      map[string]HashMap{},
+		replicationId: generateRepId(),
+		replicas:      make([]net.Conn, 0),
+		offset:        0,
+	}
+
 	flag.Parse()
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
@@ -49,20 +71,10 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, replicaMaster, serverRole, port)
+	handleConnections(l, &client)
 }
 
-type Server struct {
-	database            map[string]HashMap
-	replicas            []net.Conn
-	role, replicationId string
-	offset              int
-}
-
-func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replicas: make([]net.Conn, 0), offset: 0}
-
-	var replicaHost string = ""
+func handleConnections(listener net.Listener, client *ServerClient) {
 
 	for {
 		conn, err := listener.Accept()
@@ -73,7 +85,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 			continue
 		}
 
-		go handleCommand(conn, &server, &replicaHost)
+		go handleCommand(conn, client)
 	}
 }
 
@@ -125,7 +137,7 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func handleCommand(conn net.Conn, server *Server, replicaHost *string) {
+func handleCommand(conn net.Conn, server *ServerClient) {
 	for {
 		buf := make([]byte, 1024)
 
@@ -138,11 +150,11 @@ func handleCommand(conn net.Conn, server *Server, replicaHost *string) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		processRequest(data, string(buf), server, conn, replicaHost)
+		processRequest(data, string(buf), server, conn)
 	}
 }
 
-func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn, replicaHost *string) {
+func processRequest(data []string, req string, serverAdrs *ServerClient, conn net.Conn) {
 	endpoint := data[2]
 
 	fmt.Printf("\r\nProcessing %s command\r\n", endpoint)
@@ -155,7 +167,7 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "GET":
 		processGetRequest(data, conn, serverAdrs)
 	case "SET":
-		processSetRequest(data, req, conn, serverAdrs, replicaHost)
+		processSetRequest(data, req, conn, serverAdrs)
 	case "INFO":
 		processInfoRequest(serverAdrs, conn)
 	case "REPLCONF":
@@ -163,7 +175,11 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 
 		server.replicas = append(server.replicas, conn)
 
-		processReplconf(conn, req, replicaHost)
+		replicaAddress := processReplconf(conn, req)
+
+		if len(replicaAddress) > 0 {
+			server.replicas = append(server.replicas, conn)
+		}
 	case "PSYNC":
 		server := *serverAdrs
 
@@ -174,7 +190,7 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	}
 }
 
-func processGetRequest(data []string, conn net.Conn, serverAdrs *Server) {
+func processGetRequest(data []string, conn net.Conn, serverAdrs *ServerClient) {
 	server := *serverAdrs
 
 	hashMap := server.database
@@ -200,7 +216,7 @@ func processGetRequest(data []string, conn net.Conn, serverAdrs *Server) {
 	}
 }
 
-func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server, replicaHost *string) {
+func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *ServerClient) {
 	server := *serverAdrs
 
 	hashMap := server.database
@@ -229,34 +245,31 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 	if server.role == "master" {
 		fmt.Printf("Replicas: %d", len(server.replicas))
-		go replicateCommand(replicaHost, hashValue, key)
+		// go replicateCommand(hashValue, key)
 	}
 }
 
-func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
-	fmt.Println(*replicaHost)
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.1:%s", *replicaHost))
+// func replicateCommand(hashValue HashMap, key string) {
+// 	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
 
-	if err != nil {
-		fmt.Println("Error propagating command:", err.Error())
-	}
+// 	if err != nil {
+// 		fmt.Println("Error propagating command:", err.Error())
+// 	}
 
-	fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
+// 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
 
-	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
+// 	dialConn.Write([]byte(message))
 
-	dialConn.Write([]byte(message))
+// 	resArr := make([]byte, 256)
 
-	resArr := make([]byte, 256)
+// 	_, err = dialConn.Read(resArr)
 
-	_, err = dialConn.Read(resArr)
+// 	if err != nil {
+// 		fmt.Println("Error propagating command:", err.Error())
+// 	}
+// }
 
-	if err != nil {
-		fmt.Println("Error propagating command:", err.Error())
-	}
-}
-
-func processInfoRequest(serverAdrs *Server, conn net.Conn) {
+func processInfoRequest(serverAdrs *ServerClient, conn net.Conn) {
 	server := *serverAdrs
 
 	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
@@ -270,19 +283,23 @@ func processInfoRequest(serverAdrs *Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn, req string, replicaHost *string) {
+func processReplconf(conn net.Conn, req string) string {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		*replicaHost = uri[2]
+		conn.Write([]byte("+OK\r\n"))
+
+		return uri[2]
 	}
 
 	conn.Write([]byte("+OK\r\n"))
+
+	return ""
 }
 
-func processPsync(conn net.Conn, server *Server) {
+func processPsync(conn net.Conn, server *ServerClient) {
 	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
 
 	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
