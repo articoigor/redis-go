@@ -60,6 +60,8 @@ type Server struct {
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
+	var replicaHost string
+
 	for {
 		conn, err := listener.Accept()
 
@@ -71,7 +73,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 
 		sendHandshake(masterAddress, serverRole, port)
 
-		go handleCommand(conn, &server)
+		go handleCommand(conn, &server, &replicaHost)
 	}
 }
 
@@ -125,9 +127,7 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func handleCommand(conn net.Conn, server *Server) {
-	var replicaHost string
-
+func handleCommand(conn net.Conn, server *Server, replicaHost *string) {
 	for {
 		buf := make([]byte, 1024)
 
@@ -140,7 +140,7 @@ func handleCommand(conn net.Conn, server *Server) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		processRequest(data, string(buf), server, conn, &replicaHost)
+		processRequest(data, string(buf), server, conn, replicaHost)
 	}
 }
 
