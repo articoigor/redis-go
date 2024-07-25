@@ -53,7 +53,7 @@ type Server struct {
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
 	for {
-		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
+		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "6380", offset: 0}
 
 		conn, err := listener.Accept()
 
