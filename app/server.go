@@ -39,6 +39,8 @@ func main() {
 		fmt.Printf("Listening on port %d", port)
 	}
 
+	defer l.Close()
+
 	go handleConnections(l, masterAddress, port)
 }
 
