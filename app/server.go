@@ -59,7 +59,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 	for {
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-		sendHandshake(masterAddress, serverRole, port)
+		// sendHandshake(masterAddress, serverRole, port)
 
 		go handleCommand(listener, &server)
 	}
@@ -123,21 +123,21 @@ func handleCommand(listener net.Listener, server *Server) {
 
 	if err != nil {
 		fmt.Println("Error accepting connection:", err.Error())
-	} else {
-		for {
-			buf := make([]byte, 1024)
+	}
 
-			_, err := conn.Read(buf)
+	for {
+		buf := make([]byte, 1024)
 
-			if err != nil {
-				fmt.Println("Error reading from connection:", err.Error())
-				break
-			}
-			fmt.Println(string(buf))
-			data := strings.Split(string(buf), "\r\n")
+		_, err := conn.Read(buf)
 
-			processRequest(data, string(buf), server, conn)
+		if err != nil {
+			fmt.Println("Error reading from connection:", err.Error())
+			break
 		}
+		fmt.Println(string(buf))
+		data := strings.Split(string(buf), "\r\n")
+
+		processRequest(data, string(buf), server, conn)
 	}
 }
 
