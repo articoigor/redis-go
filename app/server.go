@@ -59,7 +59,10 @@ type Server struct {
 
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	for {
-		fmt.Println("AAAAA" + serverRole)
+		if serverRole == "subscriber" {
+			fmt.Println("AAAAA" + serverRole)
+		}
+
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
 		sendHandshake(masterAddress, serverRole, port)
