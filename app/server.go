@@ -24,6 +24,8 @@ func main() {
 
 	var replicaMaster string
 
+	host := "0.0.0.0"
+
 	serverRole := "master"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
@@ -32,11 +34,13 @@ func main() {
 
 	if replicaMaster != "" {
 		serverRole = "slave"
+
+		host = "0.0.0.1"
 	}
 
 	flag.Parse()
 
-	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
+	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
 
 	if err != nil {
 		fmt.Printf("Failed to bind to port %d", port)
