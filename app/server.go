@@ -178,7 +178,6 @@ func (sv *ServerClient) processRequest(data []string, req string, conn net.Conn)
 
 		processReplconf(sv.conn, req)
 	case "PSYNC":
-		fmt.Println(sv.replicas)
 		sv.processPsync()
 	default:
 		fmt.Println("Invalid command informed")
@@ -239,30 +238,15 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		fmt.Printf("Replicas: %d", len(server.replicas))
-		// go replicateCommand(hashValue, key)
+		for _, replicaConn := range server.replicas {
+			_, err := replicaConn.Write([]byte(req))
+
+			if err != nil {
+				fmt.Println("Error writing to replica: ", err)
+			}
+		}
 	}
 }
-
-// func replicateCommand(hashValue HashMap, key string) {
-// 	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
-
-// 	if err != nil {
-// 		fmt.Println("Error propagating command:", err.Error())
-// 	}
-
-// 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
-
-// 	dialConn.Write([]byte(message))
-
-// 	resArr := make([]byte, 256)
-
-// 	_, err = dialConn.Read(resArr)
-
-// 	if err != nil {
-// 		fmt.Println("Error propagating command:", err.Error())
-// 	}
-// }
 
 func processInfoRequest(serverAdrs *ServerClient, conn net.Conn) {
 	server := *serverAdrs
