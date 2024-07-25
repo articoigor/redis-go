@@ -71,6 +71,7 @@ func main() {
 		fmt.Printf("Listening on port %d", port)
 	}
 
+	fmt.Println("AAAAAAA")
 	client.handleConnections(l)
 }
 
