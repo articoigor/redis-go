@@ -48,26 +48,32 @@ func main() {
 func handleConnections(listener net.Listener, masterUri string, port int, serverAdr *Server) {
 	for {
 		if len(masterUri) > 0 {
-			sendHandshake(masterUri, port)
+			subListener := sendHandshake(masterUri, port)
+
+			subConn, err := subListener.Accept()
 
 			server := *serverAdr
 
 			server.role = "subscriber"
+
+			if err == nil {
+				go handleCommand(subConn, serverAdr)
+			}
+		} else {
+			conn, err := listener.Accept()
+
+			if err != nil {
+				fmt.Println("Error accepting connection:", err.Error())
+
+				continue
+			}
+
+			go handleCommand(conn, serverAdr)
 		}
-
-		conn, err := listener.Accept()
-
-		if err != nil {
-			fmt.Println("Error accepting connection:", err.Error())
-
-			continue
-		}
-
-		go handleCommand(conn, serverAdr)
 	}
 }
 
-func sendHandshake(masterUri string, port int) {
+func sendHandshake(masterUri string, port int) net.Listener {
 	master := strings.Split(masterUri, " ")
 
 	masterAddress := strings.Join(master, ":")
@@ -83,13 +89,13 @@ func sendHandshake(masterUri string, port int) {
 	_, err = conn.Read(handshakeRes)
 
 	if err == nil {
-		sendReplconf(conn, strconv.Itoa(port))
+		return sendReplconf(conn, strconv.Itoa(port))
 	}
 
-	conn.Close()
+	return nil
 }
 
-func sendReplconf(conn net.Conn, port string) {
+func sendReplconf(conn net.Conn, port string) net.Listener {
 	defer conn.Close()
 
 	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
@@ -115,6 +121,14 @@ func sendReplconf(conn net.Conn, port string) {
 	if isOk {
 		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"))
 	}
+
+	replicaListener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", port))
+
+	if err == nil {
+		return replicaListener
+	}
+
+	return nil
 }
 
 type HashMap struct {
