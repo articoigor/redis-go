@@ -229,7 +229,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		replicateCommand(replicaHost, hashValue, key)
+		go replicateCommand(replicaHost, hashValue, key)
 	}
 }
 
