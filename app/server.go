@@ -88,6 +88,8 @@ func sendHandshake(masterAddress, role string, port int) {
 		}
 
 		handshakeConn.Close()
+
+		fmt.Printf("Subscriber port: %d", port)
 	}
 }
 
