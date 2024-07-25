@@ -197,7 +197,17 @@ func processReplconf(conn net.Conn, req string, server Server) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replicas = append(server.replicas, uri[2])
+
+		fmt.Println("aaaaaa")
 	}
+
+	param := "0"
+
+	if len(server.replicas) >= 1 {
+		param = server.replicas[0]
+	}
+
+	fmt.Printf("Replicas: %s\r\n", param)
 
 	conn.Write([]byte("+OK\r\n"))
 }
