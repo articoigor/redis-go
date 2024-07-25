@@ -235,11 +235,13 @@ func processInfoRequest(server Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn, req string, server *Server) {
+func processReplconf(conn net.Conn, req string, serverAdrs *Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 	fmt.Println(re.MatchString(req))
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
+
+		server := *serverAdrs
 
 		server.replica = uri[2]
 
