@@ -109,6 +109,8 @@ func (sv *ServerClient) handleConnections(listener net.Listener) {
 
 		message := sv.handleCommand()
 
+		fmt.Println(message)
+
 		conn.Write([]byte(message))
 	}
 }
