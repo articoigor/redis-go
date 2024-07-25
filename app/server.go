@@ -133,14 +133,14 @@ func handleCommand(conn net.Conn, server Server) {
 		}
 
 		data := strings.Split(string(buf), "\r\n")
-		fmt.Println(string(buf))
+
 		processRequest(data, string(buf), server, conn)
 	}
 }
 
 func processRequest(data []string, req string, server Server, conn net.Conn) {
 	endpoint := data[2]
-
+	fmt.Println(endpoint)
 	switch endpoint {
 	case "ECHO":
 		conn.Write([]byte(fmt.Sprintf(("+%s\r\n"), data[4])))
