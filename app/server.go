@@ -152,11 +152,11 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "PING":
 		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
-		processGetRequest(data, conn, *serverAdrs)
+		processGetRequest(data, conn, serverAdrs)
 	case "SET":
 		processSetRequest(data, req, conn, serverAdrs)
 	case "INFO":
-		processInfoRequest(*serverAdrs, conn)
+		processInfoRequest(serverAdrs, conn)
 	case "REPLCONF":
 		server := *serverAdrs
 
@@ -164,14 +164,17 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 
 		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
-		processPsync(conn, *serverAdrs)
+		processPsync(conn, serverAdrs)
 	default:
 		fmt.Println("Invalid command informed")
 	}
 }
 
-func processGetRequest(data []string, conn net.Conn, server Server) {
+func processGetRequest(data []string, conn net.Conn, serverAdrs *Server) {
+	server := *serverAdrs
+
 	hashMap := server.database
+
 	key := data[4]
 
 	mapObj := hashMap[key]
@@ -230,7 +233,9 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 }
 
-func processInfoRequest(server Server, conn net.Conn) {
+func processInfoRequest(serverAdrs *Server, conn net.Conn) {
+	server := *serverAdrs
+
 	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 
 	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
@@ -257,7 +262,8 @@ func processReplconf(conn net.Conn, req string, serverAdrs *Server) {
 	conn.Write([]byte("+OK\r\n"))
 }
 
-func processPsync(conn net.Conn, server Server) {
+func processPsync(conn net.Conn, server *Server) {
+	fmt.Println("AQUI")
 	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
 
 	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
