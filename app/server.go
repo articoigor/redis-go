@@ -26,6 +26,7 @@ type Address struct {
 
 type ServerClient struct {
 	address             Address
+	conn                net.Conn
 	database            map[string]HashMap
 	replicas            []net.Conn
 	role, replicationId string
@@ -56,6 +57,7 @@ func main() {
 		replicationId: generateRepId(),
 		replicas:      make([]net.Conn, 0),
 		offset:        0,
+		conn:          nil,
 	}
 
 	flag.Parse()
@@ -75,7 +77,6 @@ func main() {
 }
 
 func handleConnections(listener net.Listener, client *ServerClient) {
-
 	for {
 		conn, err := listener.Accept()
 
@@ -84,6 +85,8 @@ func handleConnections(listener net.Listener, client *ServerClient) {
 
 			continue
 		}
+
+		client.conn = conn
 
 		go handleCommand(conn, client)
 	}
@@ -150,11 +153,11 @@ func handleCommand(conn net.Conn, server *ServerClient) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		processRequest(data, string(buf), server, conn)
+		server.processRequest(data, string(buf), conn)
 	}
 }
 
-func processRequest(data []string, req string, serverAdrs *ServerClient, conn net.Conn) {
+func (sv *ServerClient) processRequest(data []string, req string, conn net.Conn) {
 	endpoint := data[2]
 
 	fmt.Printf("\r\nProcessing %s command\r\n", endpoint)
@@ -165,26 +168,18 @@ func processRequest(data []string, req string, serverAdrs *ServerClient, conn ne
 	case "PING":
 		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
-		processGetRequest(data, conn, serverAdrs)
+		processGetRequest(data, conn, sv)
 	case "SET":
-		processSetRequest(data, req, conn, serverAdrs)
+		processSetRequest(data, req, conn, sv)
 	case "INFO":
-		processInfoRequest(serverAdrs, conn)
+		processInfoRequest(sv, conn)
 	case "REPLCONF":
-		server := *serverAdrs
+		sv.replicas = append(sv.replicas, sv.conn)
 
-		server.replicas = append(server.replicas, conn)
-
-		replicaAddress := processReplconf(conn, req)
-
-		if len(replicaAddress) > 0 {
-			server.replicas = append(server.replicas, conn)
-		}
+		processReplconf(sv.conn, req)
 	case "PSYNC":
-		server := *serverAdrs
-
-		fmt.Println(server.replicas)
-		processPsync(conn, serverAdrs)
+		fmt.Println(sv.replicas)
+		sv.processPsync()
 	default:
 		fmt.Println("Invalid command informed")
 	}
@@ -299,10 +294,10 @@ func processReplconf(conn net.Conn, req string) string {
 	return ""
 }
 
-func processPsync(conn net.Conn, server *ServerClient) {
+func (sv *ServerClient) processPsync() {
 	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
 
-	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
+	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), sv.replicationId, len(emptyRDB), emptyRDB)
 
-	conn.Write([]byte(message))
+	sv.conn.Write([]byte(message))
 }
