@@ -19,10 +19,16 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func propagateToReplica(conn net.Conn, server Server, key, value string) {
+func propagateToReplica(replicaHost *string, key, value string) {
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
 
-	_, err := conn.Write([]byte(message))
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
+
+	_, err = dialConn.Write([]byte(message))
 
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
