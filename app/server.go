@@ -38,7 +38,7 @@ func main() {
 	} else {
 		fmt.Printf("Listening on port %d", port)
 	}
-
+	fmt.Println(l.Addr().String())
 	go handleConnections(l, masterAddress, port)
 }
 
