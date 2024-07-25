@@ -224,8 +224,6 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 	if server.role == "master" {
 		for {
-			fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
-
 			dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
 
 			if err != nil {
@@ -233,6 +231,8 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 				continue
 			}
+
+			fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
 
 			go propagateToReplica(dialConn, key, hashValue.value)
 		}
