@@ -227,7 +227,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 }
 
 func processInfoRequest(server Server, conn net.Conn) {
-	fmt.Printf("\r\nreplica:%s\r\nrole:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.replica, server.role, server.replicationId, server.offset)
+	fmt.Printf("\r\nreplica:\r\nrole:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
 
 	// message := fmt.Sprintf("$%d\r\n%s", len(str), str)
 
