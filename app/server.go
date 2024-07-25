@@ -244,7 +244,6 @@ func processInfoRequest(server Server, conn net.Conn) {
 
 func processReplconf(conn net.Conn, req string, serverAdrs *Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
-	fmt.Println("TESTE")
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
@@ -262,6 +261,6 @@ func processPsync(conn net.Conn, server Server) {
 	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
 
 	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
-
+	fmt.Printf("Replica in %s", server.replica)
 	conn.Write([]byte(message))
 }
