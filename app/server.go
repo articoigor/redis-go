@@ -38,8 +38,8 @@ func main() {
 	} else {
 		fmt.Printf("Listening on port %d", port)
 	}
-	fmt.Println(l.Addr().String())
-	// go handleConnections(l, masterAddress, port)
+
+	go handleConnections(l, masterAddress, port)
 }
 
 type Server struct {
@@ -51,21 +51,23 @@ type Server struct {
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
 	for {
-		// conn, err := listener.Accept()
+		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-		// if err != nil {
-		// 	fmt.Println("Error accepting connection:", err.Error())
+		conn, err := listener.Accept()
 
-		// 	continue
-		// }
+		if err != nil {
+			fmt.Println("Error accepting connection:", err.Error())
 
-		if len(masterAddress) > 0 {
-			// sendHandshake(masterAddress, port)
-			server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
-			server.role = "subscriber"
+			continue
 		}
 
-		// go handleCommand(conn, &server)
+		// if len(masterAddress) > 0 {
+		// 	sendHandshake(masterAddress, port)
+
+		// 	server.role = "subscriber"
+		// }
+
+		go handleCommand(conn, &server)
 	}
 }
 
