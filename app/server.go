@@ -32,10 +32,6 @@ func main() {
 
 	flag.Parse()
 
-	if masterAddress != "master" {
-		serverRole = "subscriber"
-	}
-
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
