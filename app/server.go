@@ -157,7 +157,7 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "GET":
 		processGetRequest(data, conn, serverAdrs)
 	case "SET":
-		processSetRequest(data, req, conn, serverAdrs)
+		processSetRequest(data, req, conn, serverAdrs, replicaHost)
 	case "INFO":
 		processInfoRequest(serverAdrs, conn)
 	case "REPLCONF":
@@ -198,7 +198,7 @@ func processGetRequest(data []string, conn net.Conn, serverAdrs *Server) {
 	}
 }
 
-func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server) {
+func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server, replicaHost *string) {
 	server := *serverAdrs
 
 	fmt.Printf("Processing SET command\r\n")
@@ -230,7 +230,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 	if server.role == "master" {
 
-		fmt.Printf("\r\nStarted propagating SET command to %s\r\n", server.replica)
+		fmt.Printf("\r\nStarted propagating SET command to %s\r\n", *replicaHost)
 		// go propagateToReplica(conn, server, key, hashValue.value)
 	}
 }
