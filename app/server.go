@@ -30,7 +30,7 @@ func main() {
 
 	flag.Parse()
 
-	l, err := net.Listen("tcp", fmt.Sprintf("[::1]:6379", port))
+	l, err := net.Listen("tcp", fmt.Sprintf("[::1]:6380"))
 
 	if err != nil {
 		fmt.Printf("Failed to bind to port %d", port)
