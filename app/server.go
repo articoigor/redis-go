@@ -76,7 +76,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 func sendHandshake(masterAddress, role string, port int) net.Conn {
 	if role != "master" {
 		master := strings.Split(masterAddress, " ")
-		dialAddress := fmt.Sprintf("127.0.0.1:%s", master[1])
+		dialAddress := fmt.Sprintf("[::1]:%s", master[1])
 		handshakeConn, err := net.Dial("tcp", dialAddress)
 		if err == nil {
 			handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
@@ -205,7 +205,7 @@ func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
 
 	// Retry logic for establishing connection
 	for i := 0; i < 3; i++ {
-		dialConn, err = net.Dial("tcp", fmt.Sprintf("127.0.0.1:%s", *replicaHost))
+		dialConn, err = net.Dial("tcp", fmt.Sprintf("[::1]:%s", *replicaHost))
 		if err == nil {
 			break
 		}
