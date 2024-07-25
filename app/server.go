@@ -35,7 +35,7 @@ func main() {
 	if replicaMaster != "" {
 		serverRole = "slave"
 
-		host = "0.0.0.1"
+		sendHandshake(replicaMaster, serverRole, port)
 	}
 
 	flag.Parse()
@@ -65,8 +65,6 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replicas: make([]net.Conn, 0), offset: 0}
 
 	var replicaHost string = ""
-
-	sendHandshake(masterAddress, serverRole, port)
 
 	for {
 		conn, err := listener.Accept()
