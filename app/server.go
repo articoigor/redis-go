@@ -186,7 +186,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
-		fmt.Printf("MASTER AFTER REPLYING THE FIRST REPLCONF: \r\n")
+		fmt.Printf("\r\nMASTER AFTER REPLYING THE FIRST REPLCONF: \r\n")
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replicas = append(server.replicas, uri[2])
@@ -271,10 +271,10 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	fmt.Println(server.role)
-	fmt.Println(server.host)
-	fmt.Printf("replicas: %d", len(server.replicas))
 	if server.role == "master" {
+		fmt.Println(server.role)
+		fmt.Println(server.host)
+		fmt.Printf("replicas: %d", len(server.replicas))
 		propagateToReplica(server, key, hashValue.value)
 	}
 }
