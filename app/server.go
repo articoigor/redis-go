@@ -227,7 +227,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+		dialConn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%s", *replicaHost))
 
 		if err != nil {
 			fmt.Println("Error dialing replica:", err.Error())
