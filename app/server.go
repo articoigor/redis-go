@@ -157,6 +157,7 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "GET":
 		processGetRequest(data, conn, serverAdrs)
 	case "SET":
+		fmt.Printf("Server replica: %s", *replicaHost)
 		processSetRequest(data, req, conn, serverAdrs, replicaHost)
 	case "INFO":
 		processInfoRequest(serverAdrs, conn)
@@ -165,7 +166,6 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 
 		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
-		fmt.Printf("Server replica: %s", *replicaHost)
 		processPsync(conn, serverAdrs)
 	default:
 		fmt.Println("Invalid command informed")
