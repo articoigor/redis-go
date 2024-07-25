@@ -37,11 +37,13 @@ func main() {
 		os.Exit(1)
 	} else {
 		fmt.Printf("Listening on port %d", port)
+
+		fmt.Println(l.Addr().String())
 	}
 
 	defer l.Close()
 
-	go handleConnections(l, masterAddress, port)
+	// go handleConnections(l, masterAddress, port)
 }
 
 type Server struct {
