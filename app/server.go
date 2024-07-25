@@ -190,6 +190,8 @@ func processGetRequest(data []string, conn net.Conn, server Server) {
 func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server) {
 	server := *serverAdrs
 
+	fmt.Println("Processing SET command:")
+	fmt.Println((*serverAdrs).replica)
 	hashMap := server.database
 
 	now := time.Now()
