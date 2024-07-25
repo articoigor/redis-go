@@ -29,13 +29,11 @@ type Server struct {
 func main() {
 	var port int
 
-	var replicaMaster string
-
-	serverRole := "master"
+	var masterAddress string
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&replicaMaster, "replicaof", "", "Role assigned to the current connection replica")
+	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
@@ -50,22 +48,20 @@ func main() {
 
 	defer l.Close()
 
-	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replica: "6380", offset: 0}
-
-	handleConnections(l, replicaMaster, port, &server)
+	handleConnections(l, masterAddress, port)
 }
 
-func handleConnections(listener net.Listener, masterUri string, port int, serverAdr *Server) {
+func handleConnections(listener net.Listener, masterAddress string, port int) {
 	for {
-		if len(masterUri) > 0 {
-			sendHandshake(masterUri, port)
+		server := Server{role: "master", host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-			server := *serverAdr
+		conn, err := listener.Accept()
+
+		if len(masterAddress) > 0 {
+			sendHandshake(masterAddress, port)
 
 			server.role = "subscriber"
 		}
-
-		conn, err := listener.Accept()
 
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
@@ -73,30 +69,30 @@ func handleConnections(listener net.Listener, masterUri string, port int, server
 			continue
 		}
 
-		go handleCommand(conn, serverAdr)
+		go handleCommand(conn, &server)
 	}
 }
 
-func sendHandshake(masterUri string, port int) {
-	master := strings.Split(masterUri, " ")
+func sendHandshake(masterAddress string, port int) {
+	master := strings.Split(masterAddress, " ")
 
-	masterAddress := strings.Join(master, ":")
+	dialAddress := strings.Join(master, ":")
 
-	conn, err := net.Dial("tcp", masterAddress)
-
-	if err == nil {
-		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-	}
-
-	handshakeRes := make([]byte, 128)
-
-	_, err = conn.Read(handshakeRes)
+	handshakeConn, err := net.Dial("tcp", dialAddress)
 
 	if err == nil {
-		sendReplconf(conn, strconv.Itoa(port))
+		handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 	}
 
-	conn.Close()
+	handshakeRes := make([]byte, 256)
+
+	_, err = handshakeConn.Read(handshakeRes)
+
+	if err == nil {
+		sendReplconf(handshakeConn, strconv.Itoa(port))
+	}
+
+	handshakeConn.Close()
 }
 
 func sendReplconf(conn net.Conn, port string) {
@@ -149,25 +145,15 @@ func handleCommand(conn net.Conn, serverAdr *Server) {
 func processRequest(data []string, req string, server *Server, conn net.Conn) {
 	endpoint := data[2]
 
-	hashMap := server.database
-
-	param := "0"
-
-	if len(server.replica) >= 1 {
-		param = server.replica
-	}
-
-	fmt.Printf("Replica: %s\r\n", param)
-
 	switch endpoint {
 	case "ECHO":
 		conn.Write([]byte(fmt.Sprintf(("+%s\r\n"), data[4])))
 	case "PING":
 		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
-		processGetRequest(data, hashMap, conn)
+		processGetRequest(data, server.database, conn)
 	case "SET":
-		processSetRequest(data, req, hashMap, conn, *server)
+		processSetRequest(data, req, server.database, conn, *server)
 	case "INFO":
 		processInfoRequest(*server, conn)
 	case "REPLCONF":
