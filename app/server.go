@@ -227,11 +227,11 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 		if err != nil {
 			fmt.Println("Error dialing replica:", err.Error())
-		} else {
-			fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
-
-			go propagateToReplica(dialConn, key, hashValue.value)
 		}
+
+		fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
+
+		propagateToReplica(dialConn, key, hashValue.value)
 	}
 }
 
