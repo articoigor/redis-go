@@ -29,7 +29,7 @@ func main() {
 	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
 
 	flag.Parse()
-	fmt.Println(port)
+
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
@@ -61,11 +61,11 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 			continue
 		}
 
-		// if len(masterAddress) > 0 {
-		// 	sendHandshake(masterAddress, port)
+		if len(masterAddress) > 0 {
+			sendHandshake(masterAddress, port)
 
-		// 	server.role = "subscriber"
-		// }
+			server.role = "subscriber"
+		}
 
 		go handleCommand(conn, &server)
 	}
