@@ -1,40 +1,48 @@
 package main
 
-// func generateRepId() string {
-// 	byteArray := make([]byte, 40)
+import (
+	"crypto/rand"
+	"fmt"
+	"math"
+	"net"
+	"time"
+)
 
-// 	rand.Read(byteArray)
+func generateRepId() string {
+	byteArray := make([]byte, 40)
 
-// 	for i, b := range byteArray {
-// 		byteArray[i] = alphaNumeric[b%byte(len(alphaNumeric))]
-// 	}
-// 	return string(byteArray)
-// }
+	rand.Read(byteArray)
 
-// // func propagateToReplica(server Server, key, value string) {
-// // 	replicaConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", server.replica))
+	for i, b := range byteArray {
+		byteArray[i] = alphaNumeric[b%byte(len(alphaNumeric))]
+	}
+	return string(byteArray)
+}
 
-// // 	if err != nil {
-// // 		fmt.Println("Error dialing to subscriber:", err.Error())
+func propagateToReplica(server Server, key, value string) {
+	replicaConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", server.replica))
 
-// // 		return
-// // 	} else {
-// // 		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+	if err != nil {
+		fmt.Println("Error dialing to subscriber:", err.Error())
 
-// // 		_, err = replicaConn.Write([]byte(message))
+		return
+	} else {
+		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
 
-// // 		if err != nil {
-// // 			fmt.Println("Error writing to connection:", err.Error())
-// // 		}
-// // 	}
+		_, err = replicaConn.Write([]byte(message))
 
-// // 	replicaConn.Close()
-// // }
+		if err != nil {
+			fmt.Println("Error writing to connection:", err.Error())
+		}
+	}
 
-// func retrieveTimePassed(mapObj HashMap) int64 {
-// 	milli := float64(time.Now().UnixMilli())
+	replicaConn.Close()
+}
 
-// 	createdAt := float64(mapObj.createdAt)
+func retrieveTimePassed(mapObj HashMap) int64 {
+	milli := float64(time.Now().UnixMilli())
 
-// 	return int64(math.Abs(milli - createdAt))
-// }
+	createdAt := float64(mapObj.createdAt)
+
+	return int64(math.Abs(milli - createdAt))
+}
