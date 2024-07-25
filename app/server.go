@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"regexp"
@@ -36,7 +35,7 @@ func main() {
 	if replicaMaster != "" {
 		serverRole = "slave"
 
-		host = "0.0.0.0"
+		host = "0.0.0.1"
 	}
 
 	flag.Parse()
@@ -57,13 +56,13 @@ func main() {
 
 type Server struct {
 	database            map[string]HashMap
-	replica             string
+	replicas            []net.Conn
 	role, replicationId string
 	offset              int
 }
 
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
-	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
+	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replicas: make([]net.Conn, 0), offset: 0}
 
 	var replicaHost string = ""
 
@@ -78,7 +77,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 			continue
 		}
 
-		handleCommand(conn, &server, &replicaHost)
+		go handleCommand(conn, &server, &replicaHost)
 	}
 }
 
@@ -86,7 +85,7 @@ func sendHandshake(masterAddress, role string, port int) net.Conn {
 	if role != "master" {
 		master := strings.Split(masterAddress, " ")
 
-		dialAddress := fmt.Sprintf("127.0.0.0:%s", master[1])
+		dialAddress := fmt.Sprintf("0.0.0.0:%s", master[1])
 
 		handshakeConn, err := net.Dial("tcp", dialAddress)
 
@@ -168,6 +167,10 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "INFO":
 		processInfoRequest(serverAdrs, conn)
 	case "REPLCONF":
+		server := *serverAdrs
+
+		server.replicas = append(server.replicas, conn)
+
 		processReplconf(conn, req, replicaHost)
 	case "PSYNC":
 		processPsync(conn, serverAdrs)
@@ -230,22 +233,14 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		log.Printf("Attempting to connect to slave at %s:%s", "0.0.0.0", *replicaHost)
-
-		_, err := net.Dial("tcp", fmt.Sprintf("%s:%s", "0.0.0.0", *replicaHost))
-
-		if err != nil {
-			log.Printf("Failed to connect to slave: %v", err)
-			return
-		}
-		log.Println("Connection to slave established")
+		fmt.Printf("Replicas: %d", len(server.replicas))
 		go replicateCommand(replicaHost, hashValue, key)
 	}
 }
 
 func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
 	fmt.Println(*replicaHost)
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.1:%s", *replicaHost))
 
 	if err != nil {
 		fmt.Println("Error propagating command:", err.Error())
