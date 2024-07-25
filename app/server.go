@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"regexp"
@@ -145,12 +146,16 @@ func (sv *ServerClient) handleCommand() string {
 	for {
 		rawData := make([]byte, 1024)
 
-		_, err := sv.conn.Read(rawData)
+		n, err := sv.conn.Read(rawData)
 
-		if err != nil {
-			fmt.Println("Error reading from connection:", err.Error())
-
-			continue
+		if n == 0 {
+			break
+		}
+		if nil != err {
+			if err.Error() == "EOF" {
+				return ""
+			}
+			log.Fatal("Error on reading", err.Error())
 		}
 
 		data := sv.processData(string(rawData))
@@ -159,6 +164,8 @@ func (sv *ServerClient) handleCommand() string {
 
 		return sv.processRequest(data, string(rawData))
 	}
+
+	return ""
 }
 
 func (sv *ServerClient) processRequest(data []string, rawRequest string) string {
