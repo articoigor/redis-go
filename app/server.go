@@ -28,9 +28,10 @@ func main() {
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
+	flag.StringVar(&masterAddress, "replicaof", "blankHost", "Role assigned to the current connection replica")
 
-	if masterAddress != "" {
+	if masterAddress != "blankHost" {
+		fmt.Println("Server is not a master !")
 		serverRole = "subscriber"
 	}
 
@@ -59,7 +60,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 	for {
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-		// sendHandshake(masterAddress, serverRole, port)
+		sendHandshake(masterAddress, serverRole, port)
 
 		go handleCommand(listener, &server)
 	}
