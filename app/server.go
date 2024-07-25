@@ -162,15 +162,13 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 
 	hashMap := server.database
 
-	fmt.Print("Replicas: ")
-
 	param := "0"
 
 	if len(server.replicas) >= 1 {
 		param = server.replicas[0]
 	}
 
-	fmt.Printf("%s\r\n", param)
+	fmt.Printf("Replicas: %s\r\n", param)
 
 	switch endpoint {
 	case "ECHO":
