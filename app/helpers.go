@@ -10,7 +10,7 @@ import (
 )
 
 func (sv *ServerClient) processData(req string) []string {
-	splitData := strings.Split(req, "\r\n")[1:]
+	splitData := strings.Split(req, "\r\n")
 
 	request := make([]string, 3)
 
