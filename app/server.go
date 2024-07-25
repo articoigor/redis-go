@@ -96,8 +96,6 @@ func sendHandshake(masterAddress string, port int) {
 }
 
 func (sv *ServerClient) handleConnections(listener net.Listener) {
-	defer sv.conn.Close()
-
 	for {
 		conn, err := listener.Accept()
 
