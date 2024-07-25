@@ -39,7 +39,7 @@ func main() {
 		fmt.Printf("Listening on port %d", port)
 	}
 	fmt.Println(l.Addr().String())
-	go handleConnections(l, masterAddress, port)
+	// go handleConnections(l, masterAddress, port)
 }
 
 type Server struct {
