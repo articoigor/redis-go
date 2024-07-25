@@ -47,7 +47,7 @@ func main() {
 	}
 
 	defer l.Close()
-
+	fmt.Println(len(masterAddress))
 	go handleConnections(l, masterAddress, port)
 }
 
