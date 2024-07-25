@@ -45,7 +45,7 @@ func main() {
 	} else {
 		fmt.Printf("Listening on port %d", port)
 	}
-
+	fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAAA")
 	go handleConnections(l, masterAddress, port)
 }
 
