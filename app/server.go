@@ -40,7 +40,7 @@ func main() {
 		fmt.Printf("Failed to bind to port %d", port)
 		os.Exit(1)
 	} else {
-		fmt.Printf("Listening on port %d", port)
+		fmt.Printf("Listening on port %d\n", port)
 	}
 	defer l.Close()
 
@@ -84,7 +84,13 @@ func sendHandshake(masterAddress, role string, port int) net.Conn {
 			_, err = handshakeConn.Read(handshakeRes)
 			if err == nil {
 				sendReplconf(handshakeConn, strconv.Itoa(port))
+			} else {
+				fmt.Println("Error reading handshake response:", err)
+				return nil
 			}
+		} else {
+			fmt.Println("Error dialing master:", err)
+			return nil
 		}
 		return handshakeConn
 	}
@@ -188,25 +194,30 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	if server.role == "master" {
+	if server.role == "master" && *replicaHost != "" {
 		go replicateCommand(replicaHost, hashValue, key)
 	}
 }
 
 func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
-	if *replicaHost == "" {
-		fmt.Println("Replica host is not set, cannot propagate command")
-		return
-	}
+	var dialConn net.Conn
+	var err error
 
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%s", *replicaHost))
+	// Retry logic for establishing connection
+	for i := 0; i < 3; i++ {
+		dialConn, err = net.Dial("tcp", fmt.Sprintf("127.0.0.1:%s", *replicaHost))
+		if err == nil {
+			break
+		}
+		time.Sleep(2 * time.Second) // wait before retrying
+	}
 	if err != nil {
-		fmt.Println("Error propagating command:", err.Error())
+		fmt.Println("Error propagating command after retries:", err.Error())
 		return
 	}
 	defer dialConn.Close()
 
-	fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
+	fmt.Printf("\r\nPropagating command to replica in %s\n", *replicaHost)
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
 	dialConn.Write([]byte(message))
 
