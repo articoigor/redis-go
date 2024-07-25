@@ -162,7 +162,7 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 
 	hashMap := server.database
 
-	fmt.Println("Replicas: ")
+	fmt.Print("Replicas: ")
 
 	param := "0"
 
