@@ -240,7 +240,8 @@ func (sv *ServerClient) processSetRequest(data []string, req string) {
 
 			repMessage := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
 
-			_, err := replicaConn.Write([]byte(repMessage))
+			fmt.Println(repMessage)
+			_, err := replicaConn.Write([]byte(fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)))
 
 			if err != nil {
 				fmt.Println("Error writing to replica: ", err)
