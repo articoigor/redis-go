@@ -228,6 +228,22 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 }
 
+func propagateToReplica(replicaHost *string, key, value string) {
+	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
+
+	_, err = dialConn.Write([]byte(message))
+
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
+	}
+}
+
 func processInfoRequest(serverAdrs *Server, conn net.Conn) {
 	server := *serverAdrs
 
