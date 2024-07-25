@@ -60,7 +60,7 @@ type Server struct {
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	for {
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
-
+		fmt.Printf("role: %s", serverRole)
 		sendHandshake(masterAddress, serverRole, port)
 
 		go handleCommand(listener, &server)
