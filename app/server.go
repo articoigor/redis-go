@@ -158,6 +158,10 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "INFO":
 		processInfoRequest(*serverAdrs, conn)
 	case "REPLCONF":
+		server := *serverAdrs
+
+		server.replica = "teste"
+
 		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
 		processPsync(conn, *serverAdrs)
