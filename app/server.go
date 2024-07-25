@@ -76,9 +76,8 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 		if masterAddress != "master" {
 			conn.Close()
 		} else {
-			go handleCommand(conn, &server, &replicaHost)
+			handleCommand(conn, &server, &replicaHost)
 		}
-
 	}
 }
 
