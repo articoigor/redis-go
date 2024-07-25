@@ -40,12 +40,12 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, serverRole, replicaMaster, port)
-}
-
-func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
 
+	handleConnections(l, replicaMaster, port, server)
+}
+
+func handleConnections(listener net.Listener, masterUri string, port int, server Server) {
 	for {
 		if len(masterUri) > 0 {
 			sendHandshake(masterUri, port)
