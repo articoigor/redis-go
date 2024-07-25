@@ -79,30 +79,26 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 	}
 }
 
-func sendHandshake(masterAddress, role string, port int) net.Conn {
-	if role != "master" {
-		master := strings.Split(masterAddress, " ")
+func sendHandshake(masterAddress, role string, port int) {
+	master := strings.Split(masterAddress, " ")
 
-		dialAddress := fmt.Sprintf("0.0.0.0:%s", master[1])
+	dialAddress := fmt.Sprintf("%s:%s", master[0], master[1])
 
-		handshakeConn, err := net.Dial("tcp", dialAddress)
+	handshakeConn, err := net.Dial("tcp", dialAddress)
 
-		if err == nil {
-			handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-		}
-
-		handshakeRes := make([]byte, 256)
-
-		_, err = handshakeConn.Read(handshakeRes)
-
-		if err == nil {
-			sendReplconf(handshakeConn, strconv.Itoa(port))
-		}
-
-		return handshakeConn
+	if err == nil {
+		handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 	}
 
-	return nil
+	defer handshakeConn.Close()
+
+	handshakeRes := make([]byte, 256)
+
+	_, err = handshakeConn.Read(handshakeRes)
+
+	if err == nil {
+		sendReplconf(handshakeConn, strconv.Itoa(port))
+	}
 }
 
 func sendReplconf(conn net.Conn, port string) {
