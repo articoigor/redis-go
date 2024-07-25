@@ -47,7 +47,7 @@ func main() {
 	if replicaMaster != "" {
 		serverRole = "slave"
 
-		sendHandshake(replicaMaster, port)
+		go sendHandshake(replicaMaster, port)
 	}
 
 	client := ServerClient{
