@@ -15,7 +15,7 @@ func (sv *ServerClient) processData(req string) []string {
 	request := make([]string, 3)
 
 	for _, line := range splitData {
-		if !strings.Contains(line, "%") && !strings.Contains(line, "*") {
+		if !strings.Contains(line, "%") && !strings.Contains(line, "*") && line != " " {
 			request = append(request, line)
 		}
 	}

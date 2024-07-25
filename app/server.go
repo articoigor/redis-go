@@ -146,11 +146,8 @@ func (sv *ServerClient) handleCommand() string {
 	for {
 		rawData := make([]byte, 1024)
 
-		n, err := sv.conn.Read(rawData)
+		_, err := sv.conn.Read(rawData)
 
-		if n == 0 {
-			break
-		}
 		if nil != err {
 			if err.Error() == "EOF" {
 				return ""
@@ -164,8 +161,6 @@ func (sv *ServerClient) handleCommand() string {
 
 		return sv.processRequest(data, string(rawData))
 	}
-
-	return ""
 }
 
 func (sv *ServerClient) processRequest(data []string, rawRequest string) string {
