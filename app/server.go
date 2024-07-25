@@ -60,7 +60,7 @@ type Server struct {
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-	var replicaHost string
+	var replicaHost string = ""
 
 	for {
 		conn, err := listener.Accept()
@@ -71,13 +71,14 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 			continue
 		}
 
-		handshakeConn := sendHandshake(masterAddress, serverRole, port)
+		sendHandshake(masterAddress, serverRole, port)
 
-		if handshakeConn != nil {
-			fmt.Println("habemus CONEXAO")
+		if masterAddress != "master" {
+			conn.Close()
+		} else {
+			go handleCommand(conn, &server, &replicaHost)
 		}
 
-		go handleCommand(conn, &server, &replicaHost)
 	}
 }
 
