@@ -41,8 +41,6 @@ func main() {
 		fmt.Printf("Listening on port %d", port)
 	}
 
-	defer l.Close()
-
 	handleConnections(l, masterAddress, serverRole, port)
 }
 
@@ -55,10 +53,6 @@ type Server struct {
 
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	for {
-
-		if masterAddress != "master" {
-			fmt.Println("AAAAA" + serverRole)
-		}
 
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
