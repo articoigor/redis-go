@@ -126,6 +126,8 @@ func sendReplconf(conn net.Conn, port string) {
 }
 
 func handleCommand(conn net.Conn, server *Server) {
+	var replicaHost string
+
 	for {
 		buf := make([]byte, 1024)
 
@@ -138,11 +140,11 @@ func handleCommand(conn net.Conn, server *Server) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		processRequest(data, string(buf), server, conn)
+		processRequest(data, string(buf), server, conn, &replicaHost)
 	}
 }
 
-func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn) {
+func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn, replicaHost *string) {
 	endpoint := data[2]
 
 	fmt.Printf("\r\nProcessing %s command\r\n", endpoint)
@@ -159,15 +161,11 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "INFO":
 		processInfoRequest(serverAdrs, conn)
 	case "REPLCONF":
-		server := *serverAdrs
-
-		server.replica = "teste"
+		*replicaHost = "teste"
 
 		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
-		server := *serverAdrs
-
-		fmt.Printf("Server replica: %s", server.replica)
+		fmt.Printf("Server replica: %s", *replicaHost)
 		processPsync(conn, serverAdrs)
 	default:
 		fmt.Println("Invalid command informed")
