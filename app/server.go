@@ -268,7 +268,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		fmt.Printf("Started propagating SET command to %d replicas", len(server.replicas))
+		fmt.Printf("\r\nStarted propagating SET command to %d replicas\r\n", len(server.replicas))
 		propagateToReplica(server, key, hashValue.value)
 	}
 }
