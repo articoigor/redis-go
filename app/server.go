@@ -120,8 +120,6 @@ func sendReplconf(conn net.Conn, port string) {
 }
 
 func handleCommand(conn net.Conn, serverAdr *Server) {
-	defer conn.Close()
-
 	for {
 		buf := make([]byte, 1024)
 
