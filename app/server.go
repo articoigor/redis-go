@@ -22,17 +22,16 @@ type HashMap struct {
 func main() {
 	var port int
 
-	var masterAddress string
+	var replicaMaster string
 
 	serverRole := "master"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&masterAddress, "replicaof", "blankHost", "Role assigned to the current connection replica")
+	flag.StringVar(&replicaMaster, "replicaof", "", "Role assigned to the current connection replica")
 
-	if masterAddress != "blankHost" {
-		fmt.Println("Server is not a master !")
-		serverRole = "subscriber"
+	if replicaMaster != "" {
+		serverRole = "slave"
 	}
 
 	flag.Parse()
@@ -46,7 +45,9 @@ func main() {
 		fmt.Printf("Listening on port %d", port)
 	}
 
-	handleConnections(l, masterAddress, serverRole, port)
+	defer l.Close()
+
+	handleConnections(l, replicaMaster, serverRole, port)
 }
 
 type Server struct {
