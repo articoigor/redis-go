@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"regexp"
@@ -35,7 +36,7 @@ func main() {
 	if replicaMaster != "" {
 		serverRole = "slave"
 
-		host = "0.0.0.1"
+		host = "0.0.0.0"
 	}
 
 	flag.Parse()
@@ -229,13 +230,22 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
+		log.Printf("Attempting to connect to slave at %s:%d", "0.0.0.0", *replicaHost)
+
+		_, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "0.0.0.0", *replicaHost))
+
+		if err != nil {
+			log.Printf("Failed to connect to slave: %v", err)
+			return
+		}
+		log.Println("Connection to slave established")
 		go replicateCommand(replicaHost, hashValue, key)
 	}
 }
 
 func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
 	fmt.Println(*replicaHost)
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.1:%s", *replicaHost))
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
 
 	if err != nil {
 		fmt.Println("Error propagating command:", err.Error())
