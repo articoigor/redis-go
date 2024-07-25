@@ -1,11 +1,9 @@
 package main
 
 import (
-	"crypto/rand"
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"math"
 	"net"
 	"os"
 	"regexp"
@@ -15,6 +13,18 @@ import (
 )
 
 const alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+type HashMap struct {
+	createdAt, expiry int64
+	value             string
+}
+
+type Server struct {
+	database                  map[string]HashMap
+	replica                   string
+	role, replicationId, host string
+	offset                    int
+}
 
 func main() {
 	var port int
@@ -48,33 +58,26 @@ func main() {
 func handleConnections(listener net.Listener, masterUri string, port int, serverAdr *Server) {
 	for {
 		if len(masterUri) > 0 {
-			subListener := sendHandshake(masterUri, port)
-
-			subConn, err := subListener.Accept()
+			sendHandshake(masterUri, port)
 
 			server := *serverAdr
 
 			server.role = "subscriber"
-
-			if err == nil {
-				fmt.Println(subConn.LocalAddr())
-				go handleCommand(subConn, serverAdr)
-			}
-		} else {
-			conn, err := listener.Accept()
-
-			if err != nil {
-				fmt.Println("Error accepting connection:", err.Error())
-
-				continue
-			}
-
-			go handleCommand(conn, serverAdr)
 		}
+
+		conn, err := listener.Accept()
+
+		if err != nil {
+			fmt.Println("Error accepting connection:", err.Error())
+
+			continue
+		}
+
+		go handleCommand(conn, serverAdr)
 	}
 }
 
-func sendHandshake(masterUri string, port int) net.Listener {
+func sendHandshake(masterUri string, port int) {
 	master := strings.Split(masterUri, " ")
 
 	masterAddress := strings.Join(master, ":")
@@ -90,13 +93,13 @@ func sendHandshake(masterUri string, port int) net.Listener {
 	_, err = conn.Read(handshakeRes)
 
 	if err == nil {
-		return sendReplconf(conn, strconv.Itoa(port))
+		sendReplconf(conn, strconv.Itoa(port))
 	}
 
-	return nil
+	conn.Close()
 }
 
-func sendReplconf(conn net.Conn, port string) net.Listener {
+func sendReplconf(conn net.Conn, port string) {
 	defer conn.Close()
 
 	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
@@ -122,37 +125,6 @@ func sendReplconf(conn net.Conn, port string) net.Listener {
 	if isOk {
 		conn.Write([]byte("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"))
 	}
-
-	replicaListener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", port))
-
-	if err == nil {
-		return replicaListener
-	}
-
-	return nil
-}
-
-type HashMap struct {
-	createdAt, expiry int64
-	value             string
-}
-
-type Server struct {
-	database                  map[string]HashMap
-	replica                   string
-	role, replicationId, host string
-	offset                    int
-}
-
-func generateRepId() string {
-	byteArray := make([]byte, 40)
-
-	rand.Read(byteArray)
-
-	for i, b := range byteArray {
-		byteArray[i] = alphaNumeric[b%byte(len(alphaNumeric))]
-	}
-	return string(byteArray)
 }
 
 func handleCommand(conn net.Conn, serverAdr *Server) {
@@ -194,50 +166,16 @@ func processRequest(data []string, req string, server *Server, conn net.Conn) {
 		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
 		processGetRequest(data, hashMap, conn)
-	case "INFO":
-		processInfoRequest(*server, conn)
 	case "SET":
 		processSetRequest(data, req, hashMap, conn, *server)
+	case "INFO":
+		processInfoRequest(*server, conn)
 	case "REPLCONF":
 		processReplconf(conn, req, server)
 	case "PSYNC":
 		processPsync(conn, *server)
 	default:
 		fmt.Println("Invalid command informed")
-	}
-}
-
-func processReplconf(conn net.Conn, req string, serverAdr *Server) {
-	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
-
-	if re.MatchString(req) {
-		uri := strings.Split(re.FindString(req), "\r\n")
-
-		server := *serverAdr
-
-		server.replica = uri[2]
-	}
-
-	conn.Write([]byte("+OK\r\n"))
-}
-
-func processPsync(conn net.Conn, server Server) {
-	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
-
-	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
-
-	conn.Write([]byte(message))
-}
-
-func processInfoRequest(server Server, conn net.Conn) {
-	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
-
-	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
-
-	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
-
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
 	}
 }
 
@@ -261,14 +199,6 @@ func processGetRequest(data []string, hashMap map[string]HashMap, conn net.Conn)
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
 	}
-}
-
-func retrieveTimePassed(mapObj HashMap) int64 {
-	milli := float64(time.Now().UnixMilli())
-
-	createdAt := float64(mapObj.createdAt)
-
-	return int64(math.Abs(milli - createdAt))
 }
 
 func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn, server Server) {
@@ -300,20 +230,36 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 }
 
-func propagateToReplica(server Server, key, value string) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", server.replica))
+func processInfoRequest(server Server, conn net.Conn) {
+	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
+
+	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
+
+	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
 
 	if err != nil {
-		fmt.Println("Error dialing to subscriber:", err.Error())
-
-		return
-	} else {
-		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-		fmt.Printf("0.0.0.0:%s", server.replica)
-		_, err = conn.Write([]byte(message))
-
-		if err != nil {
-			fmt.Println("Error writing to connection:", err.Error())
-		}
+		fmt.Println("Error writing to connection:", err.Error())
 	}
+}
+
+func processReplconf(conn net.Conn, req string, serverAdr *Server) {
+	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
+
+	if re.MatchString(req) {
+		uri := strings.Split(re.FindString(req), "\r\n")
+
+		server := *serverAdr
+
+		server.replica = uri[2]
+	}
+
+	conn.Write([]byte("+OK\r\n"))
+}
+
+func processPsync(conn net.Conn, server Server) {
+	emptyRDB, _ := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
+
+	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
+
+	conn.Write([]byte(message))
 }
