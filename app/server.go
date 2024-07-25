@@ -230,9 +230,9 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		log.Printf("Attempting to connect to slave at %s:%d", "0.0.0.0", *replicaHost)
+		log.Printf("Attempting to connect to slave at %s:%s", "0.0.0.0", *replicaHost)
 
-		_, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "0.0.0.0", *replicaHost))
+		_, err := net.Dial("tcp", fmt.Sprintf("%s:%s", "0.0.0.0", *replicaHost))
 
 		if err != nil {
 			log.Printf("Failed to connect to slave: %v", err)
