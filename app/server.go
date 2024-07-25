@@ -31,7 +31,7 @@ func main() {
 
 	var masterAddress string
 
-	flag.IntVar(&port, "port", 0, "Port given as argument")
+	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
 	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
 
@@ -45,7 +45,7 @@ func main() {
 	} else {
 		fmt.Printf("Listening on port %d", port)
 	}
-	fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAAA")
+
 	go handleConnections(l, masterAddress, port)
 }
 
