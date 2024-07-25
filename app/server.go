@@ -61,7 +61,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 	for {
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-		go sendHandshake(masterAddress, serverRole, port)
+		sendHandshake(masterAddress, serverRole, port)
 
 		go handleCommand(listener, &server)
 	}
@@ -69,6 +69,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 
 func sendHandshake(masterAddress, role string, port int) {
 	if role == "subscriber" {
+		fmt.Printf("Curr role: " + role)
 		master := strings.Split(masterAddress, " ")
 
 		dialAddress := strings.Join(master, ":")
