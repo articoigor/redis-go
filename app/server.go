@@ -64,7 +64,7 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 		}
 
 		if len(masterAddress) > 0 {
-			sendHandshake(masterAddress, port)
+			go sendHandshake(masterAddress, port)
 
 			server.role = "subscriber"
 		}
