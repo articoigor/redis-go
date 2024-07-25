@@ -83,7 +83,7 @@ func sendHandshake(masterAddress, role string, port int) net.Conn {
 	if role != "master" {
 		master := strings.Split(masterAddress, " ")
 
-		dialAddress := strings.Join(master, ":")
+		dialAddress := fmt.Sprintf("127.0.0.1:%s", master[1])
 
 		handshakeConn, err := net.Dial("tcp", dialAddress)
 
