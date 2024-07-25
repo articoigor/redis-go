@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -53,21 +52,13 @@ type Server struct {
 }
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
-	var wg sync.WaitGroup
-
 	for {
 		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
 		if len(masterAddress) > 0 {
-			wg.Add(1)
-
 			go sendHandshake(masterAddress, port)
 
-			wg.Wait()
-
 			server.role = "subscriber"
-
-			fmt.Println(server.replica)
 		}
 
 		go handleCommand(listener, &server)
