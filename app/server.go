@@ -235,13 +235,21 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
 	fmt.Println(*replicaHost)
-	dialConn, _ := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
 	fmt.Println("*************")
 	fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
 
+	if err != nil {
+		fmt.Println("Error propagating command:", err.Error())
+	}
+
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
 
-	_, err := dialConn.Write([]byte(message))
+	_, err = dialConn.Write([]byte(message))
+
+	resArr := make([]byte, 256)
+
+	_, err = dialConn.Read(resArr)
 
 	if err != nil {
 		fmt.Println("Error propagating command:", err.Error())
