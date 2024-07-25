@@ -19,13 +19,6 @@ type HashMap struct {
 	value             string
 }
 
-type Server struct {
-	database            map[string]HashMap
-	replica             string
-	role, replicationId string
-	offset              int
-}
-
 func main() {
 	var port int
 
@@ -49,18 +42,22 @@ func main() {
 	go handleConnections(l, masterAddress, port)
 }
 
+type Server struct {
+	database            map[string]HashMap
+	replica             string
+	role, replicationId string
+	offset              int
+}
+
 func handleConnections(listener net.Listener, masterAddress string, port int) {
-	fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAAA")
 	for {
+		// conn, err := listener.Accept()
 
-		fmt.Println("********")
-		_, err := listener.Accept()
+		// if err != nil {
+		// 	fmt.Println("Error accepting connection:", err.Error())
 
-		if err != nil {
-			fmt.Println("Error accepting connection:", err.Error())
-
-			continue
-		}
+		// 	continue
+		// }
 
 		if len(masterAddress) > 0 {
 			sendHandshake(masterAddress, port)
@@ -95,8 +92,6 @@ func sendHandshake(masterAddress string, port int) {
 }
 
 func sendReplconf(conn net.Conn, port string) {
-	defer conn.Close()
-
 	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
 
 	conn.Write([]byte(confirmationStr))
