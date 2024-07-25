@@ -168,15 +168,13 @@ func (sv *ServerClient) processRequest(data []string, req string, conn net.Conn)
 	case "PING":
 		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
-		processGetRequest(data, conn, sv)
+		sv.processGetRequest(data)
 	case "SET":
-		processSetRequest(data, req, conn, sv)
+		sv.processSetRequest(data, req)
 	case "INFO":
-		processInfoRequest(sv, conn)
+		sv.processInfoRequest()
 	case "REPLCONF":
-		sv.replicas = append(sv.replicas, sv.conn)
-
-		processReplconf(sv.conn, req)
+		sv.processReplconf(req)
 	case "PSYNC":
 		sv.processPsync()
 	default:
@@ -184,10 +182,8 @@ func (sv *ServerClient) processRequest(data []string, req string, conn net.Conn)
 	}
 }
 
-func processGetRequest(data []string, conn net.Conn, serverAdrs *ServerClient) {
-	server := *serverAdrs
-
-	hashMap := server.database
+func (sv *ServerClient) processGetRequest(data []string) {
+	hashMap := sv.database
 
 	key := data[4]
 
@@ -203,17 +199,15 @@ func processGetRequest(data []string, conn net.Conn, serverAdrs *ServerClient) {
 		message = "$-1"
 	}
 
-	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
+	_, err := sv.conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
 
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 }
 
-func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *ServerClient) {
-	server := *serverAdrs
-
-	hashMap := server.database
+func (sv *ServerClient) processSetRequest(data []string, req string) {
+	hashMap := sv.database
 
 	now := time.Now()
 
@@ -231,15 +225,15 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 	hashMap[key] = hashValue
 
-	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", "+OK")))
+	_, err := sv.conn.Write([]byte(fmt.Sprintf("%s\r\n", "+OK")))
 
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
-	if server.role == "master" {
+	if sv.role == "master" {
 		conn := 1
-		for _, replicaConn := range server.replicas {
+		for _, replicaConn := range sv.replicas {
 			fmt.Printf("Processing the %d replica command propagation", conn)
 
 			repMessage := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(hashValue.value), hashValue.value)
@@ -255,32 +249,30 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 }
 
-func processInfoRequest(serverAdrs *ServerClient, conn net.Conn) {
-	server := *serverAdrs
-
-	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", server.role, server.replicationId, server.offset)
+func (sv *ServerClient) processInfoRequest() {
+	str := fmt.Sprintf("role:%s\r\nmaster_replid:%s\r\nmaster_repl_offset:%d", sv.role, sv.replicationId, sv.offset)
 
 	message := fmt.Sprintf("$%d\r\n%s", len(str), str)
 
-	_, err := conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
+	_, err := sv.conn.Write([]byte(fmt.Sprintf("%s\r\n", message)))
 
 	if err != nil {
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 }
 
-func processReplconf(conn net.Conn, req string) string {
+func (sv *ServerClient) processReplconf(req string) string {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		conn.Write([]byte("+OK\r\n"))
+		sv.conn.Write([]byte("+OK\r\n"))
 
 		return uri[2]
 	}
 
-	conn.Write([]byte("+OK\r\n"))
+	sv.conn.Write([]byte("+OK\r\n"))
 
 	return ""
 }
