@@ -61,38 +61,34 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 	for {
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-		if len(masterAddress) > 0 {
-			fmt.Println("Initiating the HANDSHAKE !")
-
-			go sendHandshake(masterAddress, port)
-
-			server.role = "subscriber"
-		}
+		sendHandshake(masterAddress, serverRole, port)
 
 		go handleCommand(listener, &server)
 	}
 }
 
-func sendHandshake(masterAddress string, port int) {
-	master := strings.Split(masterAddress, " ")
+func sendHandshake(masterAddress, role string, port int) {
+	if role == "subscriber" {
+		master := strings.Split(masterAddress, " ")
 
-	dialAddress := strings.Join(master, ":")
+		dialAddress := strings.Join(master, ":")
 
-	handshakeConn, err := net.Dial("tcp", dialAddress)
+		handshakeConn, err := net.Dial("tcp", dialAddress)
 
-	if err == nil {
-		handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		if err == nil {
+			handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		}
+
+		handshakeRes := make([]byte, 256)
+
+		_, err = handshakeConn.Read(handshakeRes)
+
+		if err == nil {
+			sendReplconf(handshakeConn, strconv.Itoa(port))
+		}
+
+		handshakeConn.Close()
 	}
-
-	handshakeRes := make([]byte, 256)
-
-	_, err = handshakeConn.Read(handshakeRes)
-
-	if err == nil {
-		sendReplconf(handshakeConn, strconv.Itoa(port))
-	}
-
-	handshakeConn.Close()
 }
 
 func sendReplconf(conn net.Conn, port string) {
