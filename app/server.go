@@ -228,6 +228,8 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 		fmt.Println("Error writing to connection:", err.Error())
 	}
 
+	fmt.Printf("server role: %s", server)
+
 	if server.role == "master" {
 		dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.1:%s", *replicaHost))
 
