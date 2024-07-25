@@ -162,9 +162,7 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "INFO":
 		processInfoRequest(serverAdrs, conn)
 	case "REPLCONF":
-		*replicaHost = "teste"
-
-		processReplconf(conn, req, serverAdrs)
+		processReplconf(conn, req, replicaHost)
 	case "PSYNC":
 		processPsync(conn, serverAdrs)
 	default:
@@ -249,16 +247,13 @@ func processInfoRequest(serverAdrs *Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn, req string, serverAdrs *Server) {
+func processReplconf(conn net.Conn, req string, replicaHost *string) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
+
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		server := *serverAdrs
-
-		server.replica = uri[2]
-
-		server.role = "subscriber"
+		*replicaHost = uri[2]
 	}
 
 	conn.Write([]byte("+OK\r\n"))
