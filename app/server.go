@@ -40,15 +40,17 @@ func main() {
 
 	defer l.Close()
 
-	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
+	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-	handleConnections(l, replicaMaster, port, server)
+	handleConnections(l, replicaMaster, port, &server)
 }
 
-func handleConnections(listener net.Listener, masterUri string, port int, server Server) {
+func handleConnections(listener net.Listener, masterUri string, port int, serverAdr *Server) {
 	for {
 		if len(masterUri) > 0 {
 			sendHandshake(masterUri, port)
+
+			server := *serverAdr
 
 			server.role = "subscriber"
 		}
@@ -61,7 +63,7 @@ func handleConnections(listener net.Listener, masterUri string, port int, server
 			continue
 		}
 
-		go handleCommand(conn, server)
+		go handleCommand(conn, serverAdr)
 	}
 }
 
@@ -82,8 +84,6 @@ func sendHandshake(masterUri string, port int) int {
 
 	if err == nil {
 		sendReplconf(conn, strconv.Itoa(port))
-	} else {
-		conn.Close()
 	}
 
 	return port
@@ -122,7 +122,7 @@ type HashMap struct {
 
 type Server struct {
 	database                  map[string]HashMap
-	replicas                  []string
+	replica                   string
 	role, replicationId, host string
 	offset                    int
 }
@@ -138,7 +138,7 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func handleCommand(conn net.Conn, server Server) {
+func handleCommand(conn net.Conn, serverAdr *Server) {
 	defer conn.Close()
 
 	for {
@@ -153,22 +153,22 @@ func handleCommand(conn net.Conn, server Server) {
 
 		data := strings.Split(string(buf), "\r\n")
 
-		processRequest(data, string(buf), server, conn)
+		processRequest(data, string(buf), serverAdr, conn)
 	}
 }
 
-func processRequest(data []string, req string, server Server, conn net.Conn) {
+func processRequest(data []string, req string, server *Server, conn net.Conn) {
 	endpoint := data[2]
 
 	hashMap := server.database
 
 	param := "0"
 
-	if len(server.replicas) >= 1 {
-		param = server.replicas[0]
+	if len(server.replica) >= 1 {
+		param = server.replica
 	}
 
-	fmt.Printf("Replicas: %s\r\n", param)
+	fmt.Printf("Replica: %s\r\n", param)
 
 	switch endpoint {
 	case "ECHO":
@@ -178,36 +178,28 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "GET":
 		processGetRequest(data, hashMap, conn)
 	case "INFO":
-		processInfoRequest(server, conn)
+		processInfoRequest(*server, conn)
 	case "SET":
-		processSetRequest(data, req, hashMap, conn, server)
+		processSetRequest(data, req, hashMap, conn, *server)
 	case "REPLCONF":
 		processReplconf(conn, req, server)
 	case "PSYNC":
-		processPsync(conn, server)
+		processPsync(conn, *server)
 	default:
 		fmt.Println("Invalid command informed")
 	}
 }
 
-func processReplconf(conn net.Conn, req string, server Server) {
+func processReplconf(conn net.Conn, req string, serverAdr *Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
 		uri := strings.Split(re.FindString(req), "\r\n")
 
-		server.replicas = append(server.replicas, uri[2])
+		server := *serverAdr
 
-		fmt.Println("aaaaaa")
+		server.replica = uri[2]
 	}
-
-	param := "0"
-
-	if len(server.replicas) >= 1 {
-		param = server.replicas[0]
-	}
-
-	fmt.Printf("Replicas: %s\r\n", param)
 
 	conn.Write([]byte("+OK\r\n"))
 }
@@ -286,25 +278,23 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		fmt.Printf("\r\nStarted propagating SET command to %d replicas\r\n", len(server.replicas))
+		fmt.Printf("\r\nStarted propagating SET command to %s\r\n", server.replica)
 		propagateToReplica(server, key, hashValue.value)
 	}
 }
 
 func propagateToReplica(server Server, key, value string) {
-	for _, subscriber := range server.replicas {
-		conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", subscriber))
+	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", server.replica))
 
-		if err != nil {
-			fmt.Println("Error dialing to subscriber:", err.Error())
-		}
+	if err != nil {
+		fmt.Println("Error dialing to subscriber:", err.Error())
+	}
 
-		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-		fmt.Printf("localhost:%s", subscriber)
-		_, err = conn.Write([]byte(message))
+	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+	fmt.Printf("localhost:%s", server.replica)
+	_, err = conn.Write([]byte(message))
 
-		if err != nil {
-			fmt.Println("Error writing to connection:", err.Error())
-		}
+	if err != nil {
+		fmt.Println("Error writing to connection:", err.Error())
 	}
 }
