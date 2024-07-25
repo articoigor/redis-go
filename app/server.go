@@ -140,8 +140,7 @@ func handleCommand(conn net.Conn, server Server) {
 
 func processRequest(data []string, req string, server Server, conn net.Conn) {
 	endpoint := data[2]
-	fmt.Println(endpoint)
-	fmt.Println(server.replica)
+
 	switch endpoint {
 	case "ECHO":
 		conn.Write([]byte(fmt.Sprintf(("+%s\r\n"), data[4])))
@@ -160,6 +159,9 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	default:
 		fmt.Println("Invalid command informed")
 	}
+
+	fmt.Println(endpoint)
+	fmt.Println(server.replica)
 }
 
 func processGetRequest(data []string, hashMap map[string]HashMap, conn net.Conn) {
