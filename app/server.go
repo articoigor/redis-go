@@ -41,7 +41,7 @@ func main() {
 
 	defer l.Close()
 
-	go handleConnections(l, masterAddress, port)
+	handleConnections(l, masterAddress, port)
 }
 
 type Server struct {
@@ -52,7 +52,10 @@ type Server struct {
 }
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
+	count := 1
+
 	for {
+		fmt.Printf("Conn count: %d", count)
 		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
 		if len(masterAddress) > 0 {
@@ -62,6 +65,8 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 		}
 
 		go handleCommand(listener, &server)
+
+		count++
 	}
 }
 
