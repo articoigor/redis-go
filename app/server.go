@@ -159,9 +159,6 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	default:
 		fmt.Println("Invalid command informed")
 	}
-
-	fmt.Println(endpoint)
-	fmt.Println((*serverAdrs).replica)
 }
 
 func processGetRequest(data []string, conn net.Conn, server Server) {
@@ -190,7 +187,8 @@ func processGetRequest(data []string, conn net.Conn, server Server) {
 func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server) {
 	server := *serverAdrs
 
-	fmt.Println("Processing SET command:")
+	fmt.Println("Processing SET command")
+	fmt.Printf("Role: %s", server.role)
 	fmt.Println((*serverAdrs).replica)
 	hashMap := server.database
 
