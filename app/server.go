@@ -71,13 +71,13 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 			continue
 		}
 
-		sendHandshake(masterAddress, serverRole, port)
+		sendHandshake(conn, masterAddress, serverRole, port)
 
 		go handleCommand(conn, &server, &replicaHost)
 	}
 }
 
-func sendHandshake(masterAddress, role string, port int) {
+func sendHandshake(conn net.Conn, masterAddress, role string, port int) {
 	if role != "master" {
 		master := strings.Split(masterAddress, " ")
 
@@ -98,6 +98,12 @@ func sendHandshake(masterAddress, role string, port int) {
 		}
 
 		err = handshakeConn.Close()
+
+		if err != nil {
+			fmt.Printf("ERROR CLOSING HANDSHAKE CONN AT PORT %d", port)
+		}
+
+		err = conn.Close()
 
 		if err != nil {
 			fmt.Printf("ERROR CLOSING CONN AT PORT %d", port)
