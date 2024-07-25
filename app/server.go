@@ -158,6 +158,9 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "INFO":
 		processInfoRequest(*serverAdrs, conn)
 	case "REPLCONF":
+		server := *serverAdrs
+
+		server.replica = "teste"
 		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
 		processPsync(conn, *serverAdrs)
@@ -192,9 +195,6 @@ func processGetRequest(data []string, conn net.Conn, server Server) {
 func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server) {
 	server := *serverAdrs
 
-	fmt.Printf("Processing SET command\r\n")
-	fmt.Printf("Role: %s\r\n", server.role)
-	fmt.Printf("Replica: %s\r\n", server.replica)
 	hashMap := server.database
 
 	now := time.Now()
