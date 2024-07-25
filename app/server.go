@@ -40,7 +40,7 @@ func main() {
 
 	defer l.Close()
 
-	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replica: "6379", offset: 0}
+	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replica: "6380", offset: 0}
 
 	handleConnections(l, replicaMaster, port, &server)
 }
