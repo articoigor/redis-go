@@ -66,6 +66,8 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 			wg.Wait()
 
 			server.role = "subscriber"
+
+			fmt.Println(server.replica)
 		}
 
 		go handleCommand(listener, &server)
