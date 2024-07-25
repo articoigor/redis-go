@@ -56,7 +56,7 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 		server := Server{role: "master", host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
 		conn, err := listener.Accept()
-
+		fmt.Println(masterAddress)
 		if len(masterAddress) > 0 {
 			sendHandshake(masterAddress, port)
 
