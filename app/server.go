@@ -97,7 +97,11 @@ func sendHandshake(masterAddress, role string, port int) {
 			sendReplconf(handshakeConn, strconv.Itoa(port))
 		}
 
-		handshakeConn.Close()
+		err = handshakeConn.Close()
+
+		if err != nil {
+			fmt.Printf("ERROR CLOSING CONN AT PORT %d", port)
+		}
 	}
 }
 
@@ -223,7 +227,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:6379"))
+		dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.1:%s", *replicaHost))
 
 		if err != nil {
 			fmt.Println("Error dialing replica:", err.Error())
@@ -239,7 +243,7 @@ func propagateToReplica(dialConn net.Conn, key, value string) {
 	defer dialConn.Close()
 
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-	fmt.Println(message)
+
 	_, err := dialConn.Write([]byte(message))
 
 	if err != nil {
