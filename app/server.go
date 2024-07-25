@@ -149,7 +149,7 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "GET":
 		processGetRequest(data, conn, *serverAdrs)
 	case "SET":
-		processSetRequest(data, req, conn, *serverAdrs)
+		processSetRequest(data, req, conn, serverAdrs)
 	case "INFO":
 		processInfoRequest(*serverAdrs, conn)
 	case "REPLCONF":
@@ -187,7 +187,9 @@ func processGetRequest(data []string, conn net.Conn, server Server) {
 	}
 }
 
-func processSetRequest(data []string, req string, conn net.Conn, server Server) {
+func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server) {
+	server := *serverAdrs
+
 	hashMap := server.database
 
 	now := time.Now()
