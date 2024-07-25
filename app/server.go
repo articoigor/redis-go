@@ -189,7 +189,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 
 	fmt.Println("Processing SET command")
 	fmt.Printf("Role: %s", server.role)
-	fmt.Println((*serverAdrs).replica)
+	fmt.Printf("Replica: %s", server.replica)
 	hashMap := server.database
 
 	now := time.Now()
