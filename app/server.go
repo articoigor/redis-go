@@ -66,6 +66,8 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 
 	var replicaHost string = ""
 
+	sendHandshake(masterAddress, serverRole, port)
+
 	for {
 		conn, err := listener.Accept()
 
@@ -74,8 +76,6 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 
 			continue
 		}
-
-		sendHandshake(masterAddress, serverRole, port)
 
 		go handleCommand(conn, &server, &replicaHost)
 	}
