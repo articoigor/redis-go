@@ -234,7 +234,6 @@ func processReplconf(conn net.Conn, req string, server *Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
-		fmt.Println("AAAAAA")
 		uri := strings.Split(re.FindString(req), "\r\n")
 
 		server.replica = uri[2]
