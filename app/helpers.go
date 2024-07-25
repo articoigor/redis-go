@@ -12,7 +12,7 @@ import (
 func (sv *ServerClient) processData(req string) []string {
 	splitData := strings.Split(req, "\r\n")
 
-	request := make([]string, 3)
+	request := []string{}
 
 	for _, line := range splitData {
 		if !strings.Contains(line, "%") && !strings.Contains(line, "*") && line != "" {
