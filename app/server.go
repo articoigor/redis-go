@@ -60,7 +60,7 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 		// }
 
 		if len(masterAddress) > 0 {
-			sendHandshake(masterAddress, port)
+			// sendHandshake(masterAddress, port)
 			server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 			server.role = "subscriber"
 		}
