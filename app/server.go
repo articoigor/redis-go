@@ -57,6 +57,7 @@ func handleConnections(listener net.Listener, masterUri string, port int, server
 			server.role = "subscriber"
 
 			if err == nil {
+				fmt.Println(subConn.LocalAddr())
 				go handleCommand(subConn, serverAdr)
 			}
 		} else {
