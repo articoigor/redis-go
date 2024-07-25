@@ -59,11 +59,19 @@ type Server struct {
 
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	for {
+		conn, err := listener.Accept()
+
+		if err != nil {
+			fmt.Println("Error accepting connection:", err.Error())
+
+			continue
+		}
+
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 		fmt.Printf("role: %s", serverRole)
 		sendHandshake(masterAddress, serverRole, port)
 
-		go handleCommand(listener, &server)
+		go handleCommand(conn, &server)
 	}
 }
 
@@ -120,13 +128,7 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func handleCommand(listener net.Listener, server *Server) {
-	conn, err := listener.Accept()
-
-	if err != nil {
-		fmt.Println("Error accepting connection:", err.Error())
-	}
-
+func handleCommand(conn net.Conn, server *Server) {
 	for {
 		buf := make([]byte, 1024)
 
