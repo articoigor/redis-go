@@ -286,7 +286,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 }
 
 func propagateToReplica(server Server, key, value string) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%s", server.replica))
+	conn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", server.replica))
 
 	if err != nil {
 		fmt.Println("Error dialing to subscriber:", err.Error())
@@ -294,7 +294,7 @@ func propagateToReplica(server Server, key, value string) {
 		return
 	} else {
 		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
-		fmt.Printf("localhost:%s", server.replica)
+		fmt.Printf("0.0.0.0:%s", server.replica)
 		_, err = conn.Write([]byte(message))
 
 		if err != nil {
