@@ -47,7 +47,7 @@ func main() {
 	if replicaMaster != "" {
 		serverRole = "slave"
 
-		go sendHandshake(replicaMaster, port)
+		sendHandshake(replicaMaster, port)
 	}
 
 	client := ServerClient{
@@ -106,6 +106,7 @@ func (sv *ServerClient) handleConnections(listener net.Listener) {
 
 			continue
 		}
+		fmt.Println("BBBBBBBBBBBBB")
 
 		sv.conn = conn
 
