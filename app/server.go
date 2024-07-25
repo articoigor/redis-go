@@ -122,8 +122,6 @@ func sendReplconf(conn net.Conn, port string) {
 }
 
 func handleCommand(conn net.Conn, server Server) {
-	defer conn.Close()
-
 	for {
 		buf := make([]byte, 1024)
 
@@ -138,6 +136,8 @@ func handleCommand(conn net.Conn, server Server) {
 
 		processRequest(data, string(buf), server, conn)
 	}
+
+	conn.Close()
 }
 
 func processRequest(data []string, req string, server Server, conn net.Conn) {
