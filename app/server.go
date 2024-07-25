@@ -76,7 +76,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 func sendHandshake(masterAddress, role string, port int) net.Conn {
 	if role != "master" {
 		master := strings.Split(masterAddress, " ")
-		dialAddress := fmt.Sprintf("0.0.0.0:%s", master[1])
+		dialAddress := fmt.Sprintf("127.0.0.1:%s", master[1])
 		handshakeConn, err := net.Dial("tcp", dialAddress)
 		if err == nil {
 			handshakeConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
@@ -194,7 +194,12 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 }
 
 func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+	if *replicaHost == "" {
+		fmt.Println("Replica host is not set, cannot propagate command")
+		return
+	}
+
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%s", *replicaHost))
 	if err != nil {
 		fmt.Println("Error propagating command:", err.Error())
 		return
