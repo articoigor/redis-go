@@ -152,19 +152,19 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 	case "PING":
 		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
-		processGetRequest(data, conn, serverAdrs)
+		go processGetRequest(data, conn, serverAdrs)
 	case "SET":
-		processSetRequest(data, req, conn, serverAdrs)
+		go processSetRequest(data, req, conn, serverAdrs)
 	case "INFO":
-		processInfoRequest(serverAdrs, conn)
+		go processInfoRequest(serverAdrs, conn)
 	case "REPLCONF":
 		server := *serverAdrs
 
 		server.replica = "teste"
 
-		processReplconf(conn, req, serverAdrs)
+		go processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
-		processPsync(conn, serverAdrs)
+		go processPsync(conn, serverAdrs)
 	default:
 		fmt.Println("Invalid command informed")
 	}
