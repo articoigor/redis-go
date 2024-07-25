@@ -35,7 +35,7 @@ func main() {
 	if replicaMaster != "" {
 		serverRole = "slave"
 
-		sendHandshake(replicaMaster, serverRole, port)
+		sendHandshake(replicaMaster, port)
 	}
 
 	flag.Parse()
@@ -79,7 +79,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 	}
 }
 
-func sendHandshake(masterAddress, role string, port int) {
+func sendHandshake(masterAddress string, port int) {
 	master := strings.Split(masterAddress, " ")
 
 	dialAddress := fmt.Sprintf("%s:%s", master[0], master[1])
