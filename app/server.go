@@ -85,17 +85,11 @@ func sendHandshake(masterUri string, port int) {
 	if err == nil {
 		sendReplconf(conn, strconv.Itoa(port))
 	}
-
-	err = conn.Close()
-
-	if err == nil {
-		fmt.Println("Handshake connection ended successfully !")
-	} else {
-		fmt.Println(err)
-	}
 }
 
 func sendReplconf(conn net.Conn, port string) {
+	defer conn.Close()
+
 	confirmationStr := fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$%d\r\n%s\r\n", len(port), port)
 
 	conn.Write([]byte(confirmationStr))
