@@ -41,7 +41,7 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, masterAddress, port)
+	go handleConnections(l, masterAddress, port)
 }
 
 type Server struct {
