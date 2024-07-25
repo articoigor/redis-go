@@ -50,6 +50,7 @@ func main() {
 }
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
+	fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAAA")
 	for {
 
 		fmt.Println("********")
