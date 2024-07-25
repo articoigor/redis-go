@@ -187,9 +187,9 @@ func processGetRequest(data []string, conn net.Conn, server Server) {
 func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Server) {
 	server := *serverAdrs
 
-	fmt.Println("Processing SET command")
-	fmt.Printf("Role: %s", server.role)
-	fmt.Printf("Replica: %s", server.replica)
+	fmt.Printf("Processing SET command\r\n")
+	fmt.Printf("Role: %s\r\n", server.role)
+	fmt.Printf("Replica: %s\r\n", server.replica)
 	hashMap := server.database
 
 	now := time.Now()
