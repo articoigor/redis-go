@@ -44,9 +44,9 @@ func main() {
 }
 
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
-	for {
-		server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
+	server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
 
+	for {
 		if len(masterUri) > 0 {
 			sendHandshake(masterUri, port)
 
@@ -268,9 +268,6 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 	}
 
 	if server.role == "master" {
-		fmt.Println(server.role)
-		fmt.Println(server.host)
-		fmt.Printf("replicas: %d", len(server.replicas))
 		propagateToReplica(server, key, hashValue.value)
 	}
 }
