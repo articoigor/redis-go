@@ -70,7 +70,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 		}
 
 		sendHandshake(masterAddress, serverRole, port)
-		fmt.Printf("server role: %s", server.role)
+
 		go handleCommand(conn, &server)
 	}
 }
@@ -135,7 +135,7 @@ func handleCommand(conn net.Conn, server *Server) {
 			fmt.Println("Error reading from connection:", err.Error())
 			break
 		}
-		fmt.Println(string(buf))
+
 		data := strings.Split(string(buf), "\r\n")
 
 		processRequest(data, string(buf), server, conn)
@@ -163,7 +163,9 @@ func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn
 
 		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
-		fmt.Println("Não tá processando PSYNC ?")
+		server := *serverAdrs
+
+		fmt.Printf("Server replica: %s", server.replica)
 		processPsync(conn, serverAdrs)
 	default:
 		fmt.Println("Invalid command informed")
