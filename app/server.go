@@ -69,7 +69,7 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 			server.role = "subscriber"
 		}
 
-		handleCommand(conn, server)
+		go handleCommand(conn, server)
 	}
 }
 
@@ -136,8 +136,6 @@ func handleCommand(conn net.Conn, server Server) {
 
 		processRequest(data, string(buf), server, conn)
 	}
-
-	conn.Close()
 }
 
 func processRequest(data []string, req string, server Server, conn net.Conn) {
