@@ -107,6 +107,8 @@ func sendHandshake(conn net.Conn, masterAddress, role string, port int) {
 
 		if err != nil {
 			fmt.Printf("ERROR CLOSING CONN AT PORT %d", port)
+		} else {
+			fmt.Println("CONN CLOSED")
 		}
 	}
 }
