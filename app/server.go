@@ -53,6 +53,13 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 	for {
 		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 		fmt.Println("********")
+
+		if len(masterAddress) > 0 {
+			sendHandshake(masterAddress, port)
+
+			server.role = "subscriber"
+		}
+
 		conn, err := listener.Accept()
 
 		if err != nil {
@@ -60,12 +67,6 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 
 			continue
 		}
-
-		// if len(masterAddress) > 0 {
-		// 	sendHandshake(masterAddress, port)
-
-		// 	server.role = "subscriber"
-		// }
 
 		go handleCommand(conn, &server)
 	}
