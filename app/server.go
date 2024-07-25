@@ -23,6 +23,7 @@ func main() {
 	var port int
 	var replicaMaster string
 	host := "0.0.0.0"
+
 	serverRole := "master"
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
@@ -32,7 +33,6 @@ func main() {
 
 	if replicaMaster != "" {
 		serverRole = "slave"
-		host = "0.0.0.1"
 	}
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
@@ -194,7 +194,7 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 }
 
 func replicateCommand(replicaHost *string, hashValue HashMap, key string) {
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%s", *replicaHost))
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
 	if err != nil {
 		fmt.Println("Error propagating command:", err.Error())
 		return
