@@ -104,7 +104,6 @@ func (sv *ServerClient) handleConnections(listener net.Listener) {
 
 			continue
 		}
-		fmt.Println("BBBBBBBBBBBBB")
 
 		sv.conn = conn
 
@@ -153,6 +152,8 @@ func (sv *ServerClient) handleCommand() string {
 		}
 
 		data := sv.processData(string(rawData))
+
+		fmt.Println(data)
 
 		return sv.processRequest(data, string(rawData))
 	}
