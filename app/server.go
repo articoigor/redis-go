@@ -133,7 +133,7 @@ func handleCommand(conn net.Conn, server Server) {
 		}
 
 		data := strings.Split(string(buf), "\r\n")
-
+		fmt.Println(string(buf))
 		processRequest(data, string(buf), server, conn)
 	}
 }
