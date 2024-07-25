@@ -56,7 +56,7 @@ type Server struct {
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	for {
 		fmt.Println(masterAddress)
-		if serverRole == "subscriber" {
+		if masterAddress != "master" {
 			fmt.Println("AAAAA" + serverRole)
 		}
 
