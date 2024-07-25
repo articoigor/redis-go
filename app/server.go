@@ -68,7 +68,7 @@ func handleConnections(listener net.Listener, masterAddress, serverRole string, 
 }
 
 func sendHandshake(masterAddress, role string, port int) {
-	if role == "subscriber" {
+	if role != "master" {
 		fmt.Printf("Curr role: " + role)
 		master := strings.Split(masterAddress, " ")
 
