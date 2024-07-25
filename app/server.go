@@ -223,15 +223,11 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		for {
-			dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+		dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
 
-			if err != nil {
-				fmt.Println("Error dialing replica:", err.Error())
-
-				continue
-			}
-
+		if err != nil {
+			fmt.Println("Error dialing replica:", err.Error())
+		} else {
 			fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
 
 			go propagateToReplica(dialConn, key, hashValue.value)
