@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"math"
 	"net"
 	"os"
 	"regexp"
@@ -30,20 +32,18 @@ func main() {
 
 	flag.Parse()
 
-	l, err := net.Listen("tcp", fmt.Sprintf("[::1]:%d", port))
+	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
 		fmt.Printf("Failed to bind to port %d", port)
 		os.Exit(1)
 	} else {
 		fmt.Printf("Listening on port %d", port)
-
-		fmt.Println(l.Addr().String())
 	}
 
 	defer l.Close()
-
-	go handleConnections(l, masterAddress, port)
+	fmt.Println("AAAAAA")
+	handleConnections(l, masterAddress, port)
 }
 
 type Server struct {
@@ -54,6 +54,7 @@ type Server struct {
 }
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
+	fmt.Println("AAAA")
 	for {
 		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
@@ -246,4 +247,43 @@ func processPsync(conn net.Conn, server Server) {
 	message := fmt.Sprintf(("+FULLRESYNC %s 0\r\n$%d\r\n%s"), server.replicationId, len(emptyRDB), emptyRDB)
 
 	conn.Write([]byte(message))
+}
+
+func generateRepId() string {
+	byteArray := make([]byte, 40)
+
+	rand.Read(byteArray)
+
+	for i, b := range byteArray {
+		byteArray[i] = alphaNumeric[b%byte(len(alphaNumeric))]
+	}
+	return string(byteArray)
+}
+
+// func propagateToReplica(server Server, key, value string) {
+// 	replicaConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", server.replica))
+
+// 	if err != nil {
+// 		fmt.Println("Error dialing to subscriber:", err.Error())
+
+// 		return
+// 	} else {
+// 		message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
+
+// 		_, err = replicaConn.Write([]byte(message))
+
+// 		if err != nil {
+// 			fmt.Println("Error writing to connection:", err.Error())
+// 		}
+// 	}
+
+// 	replicaConn.Close()
+// }
+
+func retrieveTimePassed(mapObj HashMap) int64 {
+	milli := float64(time.Now().UnixMilli())
+
+	createdAt := float64(mapObj.createdAt)
+
+	return int64(math.Abs(milli - createdAt))
 }
