@@ -33,7 +33,7 @@ func main() {
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
+	flag.StringVar(&masterAddress, "replicaof", "6380", "Role assigned to the current connection replica")
 
 	flag.Parse()
 
