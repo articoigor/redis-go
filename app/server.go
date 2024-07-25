@@ -109,7 +109,7 @@ func (sv *ServerClient) handleConnections(listener net.Listener) {
 
 		message := sv.handleCommand()
 
-		sv.conn.Write([]byte(message))
+		conn.Write([]byte(message))
 	}
 }
 
