@@ -223,24 +223,31 @@ func processSetRequest(data []string, req string, conn net.Conn, serverAdrs *Ser
 	}
 
 	if server.role == "master" {
-		fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
-		go propagateToReplica(replicaHost, key, hashValue.value)
+		for {
+			fmt.Printf("\r\nPropagating command to replica in %s", *replicaHost)
+
+			dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+
+			if err != nil {
+				fmt.Println("Error dialing replica:", err.Error())
+
+				continue
+			}
+
+			go propagateToReplica(dialConn, key, hashValue.value)
+		}
 	}
 }
 
-func propagateToReplica(replicaHost *string, key, value string) {
+func propagateToReplica(dialConn net.Conn, key, value string) {
+	defer dialConn.Close()
+
 	message := fmt.Sprintf("*3\r\n$3\r\nSET\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(key), key, len(value), value)
 
-	dialConn, err := net.Dial("tcp", fmt.Sprintf("0.0.0.0:%s", *replicaHost))
+	_, err := dialConn.Write([]byte(message))
 
 	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
-	}
-
-	_, err = dialConn.Write([]byte(message))
-
-	if err != nil {
-		fmt.Println("Error writing to connection:", err.Error())
+		fmt.Println("Error propagating command:", err.Error())
 	}
 }
 
