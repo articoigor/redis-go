@@ -24,11 +24,17 @@ func main() {
 
 	var masterAddress string
 
+	serverRole := "master"
+
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
 	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
 
 	flag.Parse()
+
+	if masterAddress != "" {
+		serverRole = "subscriber"
+	}
 
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
@@ -41,7 +47,7 @@ func main() {
 
 	defer l.Close()
 
-	handleConnections(l, masterAddress, port)
+	handleConnections(l, masterAddress, serverRole, port)
 }
 
 type Server struct {
@@ -51,14 +57,15 @@ type Server struct {
 	offset              int
 }
 
-func handleConnections(listener net.Listener, masterAddress string, port int) {
+func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	count := 1
 
 	for {
-		fmt.Printf("Conn count: %d", count)
-		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
+		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
 		if len(masterAddress) > 0 {
+			fmt.Println("Initiating the HANDSHAKE !")
+
 			go sendHandshake(masterAddress, port)
 
 			server.role = "subscriber"
