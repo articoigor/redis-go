@@ -55,16 +55,16 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 		fmt.Println("********")
 		conn, err := listener.Accept()
 
-		if len(masterAddress) > 0 {
-			sendHandshake(masterAddress, port)
-
-			server.role = "subscriber"
-		}
-
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
 
 			continue
+		}
+
+		if len(masterAddress) > 0 {
+			sendHandshake(masterAddress, port)
+
+			server.role = "subscriber"
 		}
 
 		go handleCommand(conn, &server)
