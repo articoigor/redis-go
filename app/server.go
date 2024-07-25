@@ -162,6 +162,11 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 
 	hashMap := server.database
 
+	fmt.Println("Replicas: ")
+	if len(server.replicas) >= 1 {
+		fmt.Println(server.replicas[0])
+	}
+
 	switch endpoint {
 	case "ECHO":
 		conn.Write([]byte(fmt.Sprintf(("+%s\r\n"), data[4])))
