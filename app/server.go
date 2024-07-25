@@ -176,6 +176,8 @@ func (sv *ServerClient) processRequest(data []string, req string, conn net.Conn)
 	case "REPLCONF":
 		sv.processReplconf(req)
 	case "PSYNC":
+		sv.replicas = append(sv.replicas, sv.conn)
+
 		sv.processPsync()
 	default:
 		fmt.Println("Invalid command informed")
