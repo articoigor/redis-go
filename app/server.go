@@ -69,7 +69,7 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 			server.role = "subscriber"
 		}
 
-		go handleCommand(conn, server)
+		go handleCommand(conn, &server)
 	}
 }
 
@@ -121,7 +121,7 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func handleCommand(conn net.Conn, server Server) {
+func handleCommand(conn net.Conn, server *Server) {
 	for {
 		buf := make([]byte, 1024)
 
@@ -138,7 +138,7 @@ func handleCommand(conn net.Conn, server Server) {
 	}
 }
 
-func processRequest(data []string, req string, server Server, conn net.Conn) {
+func processRequest(data []string, req string, serverAdrs *Server, conn net.Conn) {
 	endpoint := data[2]
 
 	switch endpoint {
@@ -147,24 +147,25 @@ func processRequest(data []string, req string, server Server, conn net.Conn) {
 	case "PING":
 		conn.Write([]byte("+PONG\r\n"))
 	case "GET":
-		processGetRequest(data, server.database, conn)
+		processGetRequest(data, conn, *serverAdrs)
 	case "SET":
-		processSetRequest(data, req, server.database, conn, server)
+		processSetRequest(data, req, conn, *serverAdrs)
 	case "INFO":
-		processInfoRequest(server, conn)
+		processInfoRequest(*serverAdrs, conn)
 	case "REPLCONF":
-		processReplconf(conn, req, server)
+		processReplconf(conn, req, serverAdrs)
 	case "PSYNC":
-		processPsync(conn, server)
+		processPsync(conn, *serverAdrs)
 	default:
 		fmt.Println("Invalid command informed")
 	}
 
 	fmt.Println(endpoint)
-	fmt.Println(server.replica)
+	fmt.Println((*serverAdrs).replica)
 }
 
-func processGetRequest(data []string, hashMap map[string]HashMap, conn net.Conn) {
+func processGetRequest(data []string, conn net.Conn, server Server) {
+	hashMap := server.database
 	key := data[4]
 
 	mapObj := hashMap[key]
@@ -186,7 +187,9 @@ func processGetRequest(data []string, hashMap map[string]HashMap, conn net.Conn)
 	}
 }
 
-func processSetRequest(data []string, req string, hashMap map[string]HashMap, conn net.Conn, server Server) {
+func processSetRequest(data []string, req string, conn net.Conn, server Server) {
+	hashMap := server.database
+
 	now := time.Now()
 
 	expiryVal := 0
@@ -227,7 +230,7 @@ func processInfoRequest(server Server, conn net.Conn) {
 	}
 }
 
-func processReplconf(conn net.Conn, req string, server Server) {
+func processReplconf(conn net.Conn, req string, server *Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
