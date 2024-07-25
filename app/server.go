@@ -45,16 +45,12 @@ func main() {
 
 func handleConnections(listener net.Listener, serverRole, masterUri string, port int) {
 	for {
-		subscriberPort := sendHandshake(masterUri, port)
-
 		server := Server{role: serverRole, host: strconv.Itoa(port), database: map[string]HashMap{}, replicationId: generateRepId(), replicas: []string{}, offset: 0}
 
-		if subscriberPort > 0 {
+		if len(masterUri) > 0 {
+			sendHandshake(masterUri, port)
+
 			server.role = "subscriber"
-
-			server.replicas = append(server.replicas, strconv.Itoa(subscriberPort))
-
-			fmt.Printf("Handshake sent by %s subscriber", subscriberPort)
 		}
 
 		conn, err := listener.Accept()
@@ -70,31 +66,27 @@ func handleConnections(listener net.Listener, serverRole, masterUri string, port
 }
 
 func sendHandshake(masterUri string, port int) int {
-	if len(masterUri) > 0 {
-		master := strings.Split(masterUri, " ")
+	master := strings.Split(masterUri, " ")
 
-		masterAddress := strings.Join(master, ":")
+	masterAddress := strings.Join(master, ":")
 
-		conn, err := net.Dial("tcp", masterAddress)
+	conn, err := net.Dial("tcp", masterAddress)
 
-		if err == nil {
-			conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-		}
-
-		handshakeRes := make([]byte, 128)
-
-		_, err = conn.Read(handshakeRes)
-
-		if err == nil {
-			sendReplconf(conn, strconv.Itoa(port))
-		} else {
-			conn.Close()
-		}
-
-		return port
+	if err == nil {
+		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 	}
 
-	return 0
+	handshakeRes := make([]byte, 128)
+
+	_, err = conn.Read(handshakeRes)
+
+	if err == nil {
+		sendReplconf(conn, strconv.Itoa(port))
+	} else {
+		conn.Close()
+	}
+
+	return port
 }
 
 func sendReplconf(conn net.Conn, port string) {
@@ -194,6 +186,7 @@ func processReplconf(conn net.Conn, req string, server Server) {
 	re := regexp.MustCompile(`listening\-port\r\n\$[1-9]{0,4}\r\n[0-9]{0,4}`)
 
 	if re.MatchString(req) {
+		fmt.Println("entrou aqui")
 		uri := strings.Split(re.FindString(req), "\r\n")
 		fmt.Println(len(uri))
 		server.replicas = append(server.replicas, uri[2])
@@ -277,7 +270,7 @@ func processSetRequest(data []string, req string, hashMap map[string]HashMap, co
 
 	fmt.Println(server.role)
 	fmt.Println(server.host)
-	fmt.Println(len(server.replicas))
+	fmt.Printf("replicas: %d", len(server.replicas))
 	if server.role == "master" {
 		propagateToReplica(server, key, hashValue.value)
 	}
