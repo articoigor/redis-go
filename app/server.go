@@ -43,7 +43,7 @@ func main() {
 
 	defer l.Close()
 
-	// go handleConnections(l, masterAddress, port)
+	go handleConnections(l, masterAddress, port)
 }
 
 type Server struct {
@@ -57,13 +57,13 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 	for {
 		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
-		// conn, err := listener.Accept()
+		conn, err := listener.Accept()
 
-		// if err != nil {
-		// 	fmt.Println("Error accepting connection:", err.Error())
+		if err != nil {
+			fmt.Println("Error accepting connection:", err.Error())
 
-		// 	continue
-		// }
+			continue
+		}
 
 		if len(masterAddress) > 0 {
 			sendHandshake(masterAddress, port)
@@ -71,7 +71,7 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 			server.role = "subscriber"
 		}
 
-		// go handleCommand(conn, &server)
+		go handleCommand(conn, &server)
 	}
 }
 
