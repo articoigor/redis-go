@@ -31,7 +31,7 @@ func main() {
 
 	var masterAddress string
 
-	flag.IntVar(&port, "port", 6379, "Port given as argument")
+	flag.IntVar(&port, "port", 0, "Port given as argument")
 
 	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
 
@@ -51,16 +51,9 @@ func main() {
 
 func handleConnections(listener net.Listener, masterAddress string, port int) {
 	for {
-		server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
+
 		fmt.Println("********")
-
-		if len(masterAddress) > 0 {
-			sendHandshake(masterAddress, port)
-
-			server.role = "subscriber"
-		}
-
-		conn, err := listener.Accept()
+		_, err := listener.Accept()
 
 		if err != nil {
 			fmt.Println("Error accepting connection:", err.Error())
@@ -68,7 +61,13 @@ func handleConnections(listener net.Listener, masterAddress string, port int) {
 			continue
 		}
 
-		go handleCommand(conn, &server)
+		if len(masterAddress) > 0 {
+			sendHandshake(masterAddress, port)
+			server := Server{role: "master", database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
+			server.role = "subscriber"
+		}
+
+		// go handleCommand(conn, &server)
 	}
 }
 
