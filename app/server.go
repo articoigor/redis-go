@@ -28,7 +28,11 @@ func main() {
 
 	flag.IntVar(&port, "port", 6379, "Port given as argument")
 
-	flag.StringVar(&masterAddress, "replicaof", "master", "Role assigned to the current connection replica")
+	flag.StringVar(&masterAddress, "replicaof", "", "Role assigned to the current connection replica")
+
+	if masterAddress != "" {
+		serverRole = "subscriber"
+	}
 
 	flag.Parse()
 
@@ -53,7 +57,6 @@ type Server struct {
 
 func handleConnections(listener net.Listener, masterAddress, serverRole string, port int) {
 	for {
-
 		server := Server{role: serverRole, database: map[string]HashMap{}, replicationId: generateRepId(), replica: "", offset: 0}
 
 		sendHandshake(masterAddress, serverRole, port)
@@ -130,7 +133,7 @@ func handleCommand(listener net.Listener, server *Server) {
 				fmt.Println("Error reading from connection:", err.Error())
 				break
 			}
-
+			fmt.Println(string(buf))
 			data := strings.Split(string(buf), "\r\n")
 
 			processRequest(data, string(buf), server, conn)
