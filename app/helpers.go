@@ -15,13 +15,15 @@ func (sv *ServerClient) processData(req string) []string {
 	request := []string{}
 
 	for _, line := range splitData {
-		if !strings.Contains(line, "%") && !strings.Contains(line, "*") && line != "" {
+		if !strings.Contains(line, "%") &&
+			!strings.Contains(line, "*") &&
+			!strings.Contains(line, "$") {
 			request = append(request, line)
 			fmt.Println(len(line))
 		}
 	}
 
-	return request[1:]
+	return request
 }
 
 func generateRepId() string {
