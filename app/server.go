@@ -145,7 +145,7 @@ func (sv *ServerClient) handleCommand() {
 		_, err := sv.conn.Read(rawData)
 
 		if nil != err {
-			log.Fatal("Error on reading", err.Error())
+			log.Fatal("Error on reading: ", err.Error())
 		}
 
 		data := sv.processData(string(rawData))
