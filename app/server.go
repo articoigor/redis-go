@@ -158,6 +158,7 @@ func (sv *ServerClient) handleCommand() {
 }
 
 func (sv *ServerClient) processRequest(data []string, rawRequest string) string {
+	fmt.Println("")
 	command := data[0]
 
 	fmt.Printf("\r\nProcessing %s command\r\n", data[0])
