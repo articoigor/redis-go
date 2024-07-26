@@ -40,7 +40,7 @@ func propagateToReplica(replica *net.Conn, command string) {
 	_, err := (*replica).Write([]byte(command))
 
 	if err != nil {
-		fmt.Printf("Error propagating command to replica %s", replica.LocalAddr())
+		fmt.Println("Error propagating command to replica !")
 	}
 }
 
