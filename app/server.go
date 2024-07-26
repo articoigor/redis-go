@@ -170,8 +170,7 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 		return sv.processGetRequest(data)
 	case "SET":
 		for _, replica := range sv.replicas {
-			fmt.Println(replica)
-			_, err := sv.conn.Write([]byte("+AAAAAAAAAAAAA\r\n"))
+			_, err := (*replica).Write([]byte("+AAAAAAAAAAAAA\r\n"))
 
 			if err != nil {
 				fmt.Println("Error propagating command to replica !")
