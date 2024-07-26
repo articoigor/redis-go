@@ -173,23 +173,23 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 	case "SET":
 		fmt.Println("Role: " + sv.role)
 		fmt.Println(rawRequest)
-		for _, replica := range sv.replicas {
-			_, err := replica.Write([]byte("+AAAAAAAAAAAAA\r\n"))
+		// for _, replica := range sv.replicas {
+		// 	_, err := replica.Write([]byte("+AAAAAAAAAAAAA\r\n"))
 
-			if err != nil {
-				fmt.Println("Error propagating command to replica !")
-			}
+		// 	if err != nil {
+		// 		fmt.Println("Error propagating command to replica !")
+		// 	}
 
-			replicaRes := make([]byte, 256)
+		// 	replicaRes := make([]byte, 256)
 
-			_, err = replica.Read(replicaRes)
+		// 	_, err = replica.Read(replicaRes)
 
-			if err != nil {
-				fmt.Println("Error receiving response replica !")
-			} else {
-				fmt.Println("Command propagated successfully !")
-			}
-		}
+		// 	if err != nil {
+		// 		fmt.Println("Error receiving response replica !")
+		// 	} else {
+		// 		fmt.Println("Command propagated successfully !")
+		// 	}
+		// }
 
 		return sv.processSetRequest(data, rawRequest)
 	case "INFO":
