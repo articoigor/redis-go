@@ -19,7 +19,6 @@ func (sv *ServerClient) processData(req string) []string {
 			!strings.Contains(line, "*") &&
 			!strings.Contains(line, "$") {
 			request = append(request, line)
-			fmt.Println(len(line))
 		}
 	}
 
