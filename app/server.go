@@ -151,7 +151,7 @@ func (sv *ServerClient) handleCommand() {
 		data := sv.processData(string(rawData))
 
 		message := sv.processRequest(data, string(rawData))
-		fmt.Printf("Response: %s", message)
+
 		sv.conn.Write([]byte(message))
 	}
 }
@@ -169,10 +169,13 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 	case "GET":
 		return sv.processGetRequest(data)
 	case "SET":
+		message := sv.processSetRequest(data, rawRequest)
+
 		for _, replica := range sv.replicas {
 			propagateToReplica(replica, rawRequest)
 		}
-		return sv.processSetRequest(data, rawRequest)
+
+		return message
 	case "INFO":
 		return sv.processInfoRequest()
 	case "REPLCONF":
