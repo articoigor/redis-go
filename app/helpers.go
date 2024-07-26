@@ -38,7 +38,7 @@ func generateRepId() string {
 
 func propagateToReplica(replica *net.Conn, command string) {
 	fmt.Println(command)
-	_, err := (*replica).Write([]byte(command))
+	_, err := (*replica).Write([]byte(command + "\r\n"))
 
 	if err != nil {
 		fmt.Println("Error propagating command to replica !")
