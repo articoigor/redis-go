@@ -107,7 +107,7 @@ func (sv *ServerClient) handleConnections(listener net.Listener) {
 
 		sv.conn = conn
 
-		go sv.handleCommand(conn)
+		sv.handleCommand(conn)
 	}
 }
 
