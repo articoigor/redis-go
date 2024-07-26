@@ -172,7 +172,7 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 		for _, replica := range sv.replicas {
 			propagateToReplica(replica, rawRequest)
 		}
-		return sv.processSetRequest(data)
+		return sv.processSetRequest(data, rawRequest)
 	case "INFO":
 		return sv.processInfoRequest()
 	case "REPLCONF":
@@ -204,14 +204,14 @@ func (sv *ServerClient) processGetRequest(data []string) string {
 	return fmt.Sprintf("%s\r\n", message)
 }
 
-func (sv *ServerClient) processSetRequest(data []string) string {
+func (sv *ServerClient) processSetRequest(data []string, rawRequest string) string {
 	key, value := data[1], data[2]
 
 	now := time.Now()
 
 	var expiryVal int64 = 0
-	fmt.Println(data)
-	if len(data) > 3 {
+
+	if strings.Contains(rawRequest, "px") {
 		expiryVal, _ = strconv.ParseInt(data[4], 10, 64)
 	}
 
