@@ -174,6 +174,16 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 			if err != nil {
 				fmt.Println("Error propagating command to replica !")
 			}
+
+			replicaRes := make([]byte, 256)
+
+			_, err = replica.Read(replicaRes)
+
+			if err != nil {
+				fmt.Println("Error receiving response replica !")
+			} else {
+				fmt.Println("Command propagated successfully !")
+			}
 		}
 
 		return sv.processSetRequest(data, rawRequest)
