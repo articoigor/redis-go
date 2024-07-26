@@ -220,6 +220,7 @@ func (sv *ServerClient) processGetRequest(data []string) string {
 }
 
 func (sv *ServerClient) processSetRequest(data []string, rawRequest string) string {
+	fmt.Println("PASSOU AQUI")
 	key, value := data[1], data[2]
 
 	now := time.Now()
