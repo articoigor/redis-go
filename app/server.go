@@ -234,6 +234,8 @@ func (sv *ServerClient) processSetRequest(data []string, rawRequest string) stri
 
 	sv.database[key] = hashValue
 
+	fmt.Println("PASSOU AQUI")
+
 	return fmt.Sprintf("%s\r\n", "+OK")
 }
 
