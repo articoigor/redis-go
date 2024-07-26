@@ -170,7 +170,7 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 		return sv.processGetRequest(data)
 	case "SET":
 		for _, replica := range sv.replicas {
-			propagateToReplica(&replica, rawRequest)
+			go propagateToReplica(&replica, rawRequest)
 		}
 
 		return sv.processSetRequest(data, rawRequest)
