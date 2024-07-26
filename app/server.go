@@ -169,13 +169,11 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 	case "GET":
 		return sv.processGetRequest(data)
 	case "SET":
-		message := sv.processSetRequest(data, rawRequest)
-
 		for _, replica := range sv.replicas {
-			propagateToReplica(replica, rawRequest)
+			go propagateToReplica(&replica, rawRequest)
 		}
 
-		return message
+		return sv.processSetRequest(data, rawRequest)
 	case "INFO":
 		return sv.processInfoRequest()
 	case "REPLCONF":

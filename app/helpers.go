@@ -36,8 +36,8 @@ func generateRepId() string {
 	return string(byteArray)
 }
 
-func propagateToReplica(replica net.Conn, command string) {
-	_, err := replica.Write([]byte(command))
+func propagateToReplica(replica *net.Conn, command string) {
+	_, err := (*replica).Write([]byte(command))
 
 	if err != nil {
 		fmt.Printf("Error propagating command to replica %s", replica.LocalAddr())
