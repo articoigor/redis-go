@@ -108,11 +108,7 @@ func (sv *ServerClient) handleConnections(listener net.Listener) {
 
 		sv.conn = conn
 
-		message := sv.handleCommand()
-
-		fmt.Println(message)
-
-		conn.Write([]byte(message))
+		sv.handleCommand()
 	}
 }
 
@@ -142,24 +138,21 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func (sv *ServerClient) handleCommand() string {
+func (sv *ServerClient) handleCommand() {
 	for {
 		rawData := make([]byte, 1024)
 
 		_, err := sv.conn.Read(rawData)
 
 		if nil != err {
-			if err.Error() == "EOF" {
-				return ""
-			}
 			log.Fatal("Error on reading", err.Error())
 		}
 
 		data := sv.processData(string(rawData))
 
-		fmt.Println(data)
+		message := sv.processRequest(data, string(rawData))
 
-		return sv.processRequest(data, string(rawData))
+		sv.conn.Write([]byte(message))
 	}
 }
 
