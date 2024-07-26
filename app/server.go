@@ -170,7 +170,11 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 		return sv.processGetRequest(data)
 	case "SET":
 		for _, replica := range sv.replicas {
-			go propagateToReplica(&replica, rawRequest)
+			_, err := replica.Write([]byte("+AAAAAAAAAAAAA\r\n"))
+
+			if err != nil {
+				fmt.Println("Error propagating command to replica !")
+			}
 		}
 
 		return sv.processSetRequest(data, rawRequest)

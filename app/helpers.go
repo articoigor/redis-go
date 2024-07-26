@@ -2,9 +2,7 @@ package main
 
 import (
 	"crypto/rand"
-	"fmt"
 	"math"
-	"net"
 	"strings"
 	"time"
 )
@@ -34,15 +32,6 @@ func generateRepId() string {
 		byteArray[i] = alphaNumeric[b%byte(len(alphaNumeric))]
 	}
 	return string(byteArray)
-}
-
-func propagateToReplica(replica *net.Conn, command string) {
-	fmt.Println(command)
-	_, err := (*replica).Write([]byte("+AAAAAAAAAAAAA\r\n"))
-
-	if err != nil {
-		fmt.Println("Error propagating command to replica !")
-	}
 }
 
 func retrieveTimePassed(mapObj HashMap) int64 {
