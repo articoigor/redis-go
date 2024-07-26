@@ -168,6 +168,7 @@ func (sv *ServerClient) processRequest(data []string, rawRequest string) string 
 	case "GET":
 		return sv.processGetRequest(data)
 	case "SET":
+		fmt.Println("Role: " + sv.role)
 		fmt.Println(rawRequest)
 		for _, replica := range sv.replicas {
 			_, err := replica.Write([]byte("+AAAAAAAAAAAAA\r\n"))
