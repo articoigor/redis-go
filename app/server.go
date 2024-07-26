@@ -151,7 +151,7 @@ func (sv *ServerClient) handleCommand() {
 		data := sv.processData(string(rawData))
 
 		message := sv.processRequest(data, string(rawData))
-
+		fmt.Printf("Response: %s", message)
 		sv.conn.Write([]byte(message))
 	}
 }
