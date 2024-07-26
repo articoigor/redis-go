@@ -107,7 +107,7 @@ func (sv *ServerClient) handleConnections(listener net.Listener) {
 
 		sv.conn = conn
 
-		go sv.handleCommand()
+		go sv.handleCommand(conn)
 	}
 }
 
@@ -137,7 +137,7 @@ func sendReplconf(conn net.Conn, port string) {
 	}
 }
 
-func (sv *ServerClient) handleCommand() {
+func (sv *ServerClient) handleCommand(conn net.Conn) {
 	for {
 		rawData := make([]byte, 1024)
 
@@ -153,7 +153,7 @@ func (sv *ServerClient) handleCommand() {
 
 		fmt.Println(message)
 
-		sv.conn.Write([]byte(message))
+		conn.Write([]byte(message))
 	}
 }
 
