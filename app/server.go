@@ -210,7 +210,7 @@ func (sv *ServerClient) processSetRequest(data []string) string {
 	now := time.Now()
 
 	var expiryVal int64 = 0
-
+	fmt.Println(data)
 	if len(data) > 3 {
 		expiryVal, _ = strconv.ParseInt(data[4], 10, 64)
 	}
